@@ -55,7 +55,7 @@ analysis_types:
   - Fusion analysis
   - Methylation analysis
 interpretation:
-  - Variant of uncertain significance
+  - Variant of uncertain clinical significance
   - Likely pathogenic
   - Pathogenic
 zygosity:
