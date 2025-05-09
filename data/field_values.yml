@@ -58,6 +58,9 @@ interpretation:
   - Variant of uncertain significance
   - Likely pathogenic
   - Pathogenic
+zygosity:
+  - heterozygous
+  - homozygous
 genes:
   - ABCB1
   - ABCB11

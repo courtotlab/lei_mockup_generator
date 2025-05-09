@@ -18,14 +18,15 @@ ap <- add_argument(ap,
 )
 ap <- add_argument(ap,
   "--outprefix",
-  help = "the output file"
+  help = "the output file",
+  default = "interpolated"
 )
-args <- parse_args(ap)
-# args <- list(
-#   template_file = "templates/CHEO_template.tex",
-#   json_file = "mock_data.json",
-#   out_prefix = "CHEO"
-# )
+# args <- parse_args(ap)
+args <- list(
+  template_file = "templates/CHEO_template.tex",
+  json_file = "mock_data.json",
+  out_prefix = "test/CHEO"
+)
 
 # Read the template
 lines <- readLines(args$template_file)
@@ -54,6 +55,21 @@ extract <- function(text, rx, capture = TRUE) {
   data.frame(label = labels, start = pos, end = pos + len - 1)
 }
 
+# helper function to escape special characters for latex
+tex_escape <- function(str) {
+  str <- gsub("\\\\", "\\\\textasciibackslash ", str)
+  str <- gsub("%", "\\\\%", str)
+  str <- gsub("&", "\\\\&", str)
+  str <- gsub("\\$", "\\\\$", str)
+  str <- gsub("#", "\\\\#", str)
+  str <- gsub("_", "\\\\_", str)
+  str <- gsub("\\{", "\\\\{", str)
+  str <- gsub("\\}", "\\\\}", str)
+  str <- gsub("~", "\\\\textasciitilde ", str)
+  str <- gsub("\\^", "\\\\textasciicircum ", str)
+  str
+}
+
 #extract iterator sections
 rx_begin_iter <- "\\\\begin\\{dataiter\\}\\{([^}]+)\\}"
 rx_end_iter <- "\\\\end\\{dataiter\\}"
@@ -80,7 +96,8 @@ rx_field <- "\\\\data\\{([^}]+)\\}"
 section_fields <- lapply(text_sections, \(txt) extract(txt, rx_field))
 
 #iterate over datasets
-for (uuid in names(mock_data)) {
+# for (uuid in names(mock_data)) {
+outputs <- lapply(names(mock_data), \(uuid) {
   dataset <- mock_data[[uuid]]
   #perform interpolations
   inter_sections <- lapply(seq_along(text_sections), \(i) {
@@ -91,23 +108,52 @@ for (uuid in names(mock_data)) {
     if (startsWith(section_name, "text_")) {
       for (j in seq_len(nrow(fields))) {
         label <- fields[j, "label"]
-        marker <- paste0("\\\\data\\{", label, "\\}")
+        marker <- paste0("\\data{", label, "}")
         if (label == "blurb") {
           # TODO: implement blurb generator
-          txt <- sub(marker, "BLURB GOES HERE.", txt)
+          txt <- sub(marker, "BLURB GOES HERE.", txt, fixed = "TRUE")
         } else if (!(label %in% names(dataset))) {
           cat("Skipping unsupported label: ", label, "\n")
-          txt <- sub(marker, "MISSING DATA!", txt)
+          txt <- sub(marker, "MISSING DATA!", txt, fixed = "TRUE")
         } else {
-          value <- dataset[[fields[j, "label"]]]
-          txt <- sub(marker, value, txt)
+          value <- tex_escape(dataset[[label]])
+          # cat(label, " -> ", value, "\n")
+          txt <- sub(marker, value, txt, fixed = "TRUE")
         }
       }
+      txt
     } else {
       #otherwise, if this is an iterator section:
       iter_type <- sub("^[^:]+:", "", section_name)
-      subdataset <- dataset[[iter_type]]
-      #TODO: More here
+      subdatasets <- dataset[[iter_type]]
+      rows <- list()
+      for (k in seq_along(subdatasets)) {
+        sds <- subdatasets[[k]]
+        row <- txt
+        for (j in seq_len(nrow(fields))) {
+          label <- fields[j, "label"]
+          marker <- paste0("\\data{", label, "}")
+          if (!(label %in% names(sds))) {
+            cat("Skipping unsupported label: ", label, "\n")
+            row <- sub(marker, "MISSING DATA!", row, fixed = TRUE)
+          } else {
+            value <- tex_escape(sds[[label]])
+            # cat(label, " -> ", value, "\n")
+            row <- sub(marker, value, row, fixed = TRUE)
+          }
+        }
+        rows <- c(rows, row)
+      }
+      paste(rows, collapse = "")
     }
   })
+  paste0(inter_sections, collapse = "")
+}) |> setNames(names(mock_data))
+
+#write outputs to file
+for (uuid in names(outputs)) {
+  outfile <- paste0(args$out_prefix, "_", uuid, ".tex")
+  cat(outputs[[uuid]], file = outfile)
 }
+
+cat("Done!")

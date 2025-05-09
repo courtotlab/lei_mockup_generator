@@ -112,6 +112,10 @@ sample_variants <- function(genes) {
     data$transcript_id <- gene_info[data$gene_symbol, "refseq_mrna"]
     # TODO: data$exon
     data$reference_genome <- "GRCh38"
+    data$zygosity <- sample(
+      field_values$zygosity, 1,
+      prob = c(.8, .2)
+    )
     data$interpretation <- sample(
       field_values$interpretation, 1,
       prob = c(.6, .3, .1)
@@ -161,9 +165,11 @@ generate_mockup <- function() {
   data$testing_laboratory <- sample_field("labs")
   data$sequencing_scope <- sample_field("scopes")
   data$tested_genes <- gen_genes()
+  data$num_tested_genes <- length(data$tested_genes)
   data$sample_type <- sample_field("sample_types")
   data$analysis_type <- sample_field("analysis_types")
   data$variants <- sample_variants(names(data$tested_genes))
+  data$num_variants <- length(data$variants)
   data
 }
 

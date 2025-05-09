@@ -10,8 +10,8 @@
 \setlength{\parskip}{.5em}
 
 %Define fake commands for values to be replaced by the pre-processor
-\newcommand{data}[1]{}
-\newenvironmnet{dataiter}[1]{}{}
+\newcommand{\data}[1]{}
+\newenvironment{dataiter}[1]{}{}
 
 \begin{document}
 
@@ -54,8 +54,7 @@ Finding(s):
 \hline
 {\bf Gene} & {\bf Variant (c.)} & {\bf Amino acid change (p.)} & {\bf Zygosity} & {\bf Interpretation}
 \\ \hline
-\begin{dataiter}{variant}
-\data{variant:gene_symbol} & \data{variant:hgvsc} & \data{variant:hgvsp} & \data{variant:zygosity} & \data{variant:interpretation}\\ \hline
+\begin{dataiter}{variants}\data{gene_symbol} & \data{hgvsc} & \data{hgvsp} & \data{zygosity} & \data{interpretation}\\ \hline
 \end{dataiter}
 \end{tabular}
 
@@ -72,19 +71,17 @@ This assay is based on the current state of knowledge of the genetic basis of th
 
 \section*{Methodology Used}
 Next Generation Sequencing 
-HEREDITARY BREAST AND OVARIAN CANCER \data{tested_genes:num} gene panel, HOXB13 c.251G>A (p.Gly84Glu) variant sequencing, and MLPA for a subset of genes 
+HEREDITARY BREAST AND OVARIAN CANCER \data{num_tested_genes} gene panel, HOXB13 c.251G>A (p.Gly84Glu) variant sequencing, and MLPA for a subset of genes 
 \begin{flushright}
 Electronically signed by [Not yet signed] on [Date] at [Time]
 \end{flushright}
 
 \section*{Test Details}
-Genes analyzed: \data{tested_genes}
+Genes analyzed: \begin{dataiter}{tested_genes}\data{gene_symbol}, \end{dataiter}
 
 Genomic DNA is enriched for targeted regions using custom designed capture probes (KAPA HyperChoice) and a hybridization-based protocol (KAPA HyperPlus Custom Library, KAPA Biosystems-Roche) followed by next generation sequencing (NGS) on a NextSeq platform (Illumina). Read alignment and single nucleotide variants (SNV) and small insertion/deletions (indels) calling are performed using NextGENe software (SNP/INDEL analysis, SoftGenetics) SNVs and indels within coding exons and 20 bps flanking regions are analyzed. Certain known likely pathogenic or pathogenic variants outside these reqions are also included in the analysis (for a complete list please contact our laboratory). Exonic deletions and duplications in all targeted genes (except PMS2) are called using an in-house copy number variant (CNV) analysis algorithm (PMID 27376475).  Multiplex ligation-dependent probe amplification (MLPA) is performed for CNV analysis for PMS2. Note that some MLPA kits used as part of this test may contain probes for genes or variants that are not included in our test panels, which could result in incidental findings. All reported variants are confirmed by a second technology including Sanger sequencing; MLPA, long range PCR, or qPCR. Based on validation study results, this assay achieves 99\% analytical sensitivity and specificity for SNV, indels <10bp in length and exonic deletions and duplications; however, sensitivity for indels larger than 10bp but smaller than a full exon may be reduced. This assay is not designed and validated for detection of mosaicism. The following genes and corresponding exons are prone to misalignment due to presence of highly homologous regions in the genome and therefore, are at increased risk of false results: ATM exon 28, CHEK2 exons 11-15, PTEN exon 9 and PMS2 exons 1-5, 9, 11-15 (PMID 27228465). Variant nomenclature is based on the Human Genome Variation Society guidelines. Variant interpretation and classification is based on published guidelines (PMID 25741868). Only pathogenic, likely pathogenic, and variants of uncertain clinical significance are reported.
 
-The following transcripts are used in this analysis: \begin{dataiter}{tested_genes}
-\data{tested_genes:gene_symbol} (\data{tested_genes:refseq_mrna}),
-\end{dataiter}
+The following transcripts are used in this analysis: \begin{dataiter}{tested_genes} \data{gene_symbol} (\data{refseq_mrna}),\end{dataiter}
 
 *CNV analysis only; \^{}single variant c.251G>A, p.(Gly84Glu) only
 \end{document}
