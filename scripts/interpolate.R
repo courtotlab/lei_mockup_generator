@@ -20,15 +20,17 @@ ap <- add_argument(ap,
 )
 ap <- add_argument(ap,
   "--outprefix",
-  help = "the output file",
-  default = "interpolated"
+  help = "the output file"
 )
-# args <- parse_args(ap)
-args <- list(
-  template_file = "templates/CHEO_template.tex",
-  json_file = "mock_data.json",
-  out_prefix = "test/CHEO"
-)
+args <- parse_args(ap)
+# args <- list(
+#   template_file = "templates/CHEO_template.tex",
+#   json_file = "mock_data.json",
+#   out_prefix = "test/CHEO"
+# )
+if (is.na(args$outprefix)) {
+  args$outprefix = sub("\\.tex$", "", basename(args$template_file))
+}
 
 # Read the template
 lines <- readLines(args$template_file)
