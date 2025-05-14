@@ -9,6 +9,20 @@
 \setlength{\parindent}{0em}
 \setlength{\parskip}{.5em}
 
+\usepackage{fancyhdr}
+\pagestyle{fancy}
+\fancyhf{} 
+
+\fancyhead[C]{\textbf{Blood and Bone Marrow Consultation Report}}
+\fancyhead[R]{\textbf{B22-6528}}
+
+\fancyfoot[C]{\textbf{PM-1 Gynecological Oncology Clinic}}
+\fancyfoot[R]{\textbf{Page \thepage\ of \pageref{LastPage}}}
+
+\renewcommand{\footrulewidth}{0.4pt}
+
+\usepackage{lastpage}
+
 \begin{document}
 \begin{center}{\LARGE \bf LABORATORY MEDICINE PROGRAM }\end{center}
 \begin{tabular}{p{4cm} >{\centering \arraybackslash}p{11.59cm} p{10cm}}
@@ -79,11 +93,8 @@ Results: & Variant(s) detected
 Comments \\
 The Placeholder and Placeholder variants are present in Placeholder in this patient. 
 \end{flushleft}
-
-
-{\bf ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~Blood and Bone Marrow Consultation Report ~~~~~~~~~~~~~~~~~~~~~~~~~~B22-6528}
-
-
+\thispagestyle{empty} % No header/footer on the first page
+\pagestyle{fancy}
 
 \begin{flushleft}
 {\bf Specimen tested: } Placeholder
