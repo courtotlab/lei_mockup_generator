@@ -26,7 +26,7 @@ args <- parse_args(ap)
 # args <- list(
 #   template_file = "templates/CHEO_template.tex",
 #   json_file = "mock_data.json",
-#   out_prefix = "test/CHEO"
+#   outprefix = "test/CHEO"
 # )
 if (is.na(args$outprefix)) {
   args$outprefix = sub("\\.tex$", "", basename(args$template_file))
@@ -286,7 +286,7 @@ outputs <- lapply(names(mock_data), \(uuid) {
 
 #write outputs to file
 for (uuid in names(outputs)) {
-  outfile <- paste0(args$out_prefix, "_", uuid, ".tex")
+  outfile <- paste0(args$outprefix, "_", uuid, ".tex")
   cat(outputs[[uuid]], file = outfile)
 }
 
