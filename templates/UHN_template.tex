@@ -89,7 +89,7 @@ Results: & Variant(s) detected
 \begin{tabular}{p{0cm} p{2 cm}p{2cm} p{10cm}}\\
 & {\bf \underline{- - Variant 1}} & \\
 & Variant: & \data{gene_symbol}{} \data{hgvsc}: \data{hgvsp} \\
-& Zygosity: & \data{zygosity \\
+& Zygosity: & \data{zygosity} \\
 & Classification: & \data{interpretation}\\
 \end{tabular}
 \end{dataiter}
@@ -97,23 +97,25 @@ Results: & Variant(s) detected
 
 \begin{flushleft}
 Comments \\
-\data{summary_blurlb}
+\begin{dataiter}{variants}
+\data{hgvsc}{}: \data{hgvsp}{} variants are present. 
 \end{flushleft}
+\end{dataiter}
 
 \thispagestyle{empty} % No header/footer on the first page
 \pagestyle{fancy}
-
 \begin{flushleft}
 {\bf Specimen tested: } Peripheral Blood
 \end{flushleft}
 
 %in this section do i use tested_genes or should i use 
+\begin{dataiter}{variants}
 \section*{\underline {\data{interpretation}{} Variant Identified:}\newline}
-{\bf \begin{dataiter}{tested_genes} \data{gene_symbol}{} \data{hgvsc}: \data{hgvsp}} 
+{\bf \data{gene_symbol}{} \data{hgvsc}: \data{hgvsp}} 
 \newline
-\data{blurb}
+\newline
 \end{dataiter}
-\newline
+\data{blurb}
 \newline
 \newline
 
@@ -123,8 +125,10 @@ Genes(s)/Panel Tested:\\
 Hereditary Breast/Ovarian/Prostate Cancer: \\}
 \begin{dataiter}{tested_genes}\data{gene_symbol} \end{dataiter}
 \newline
+\newline
 {\bf Methodology: } Genomic DNA was analyzed using UHN Hereditary Panel version 4.0 to examine the exonic coding regions (+/- 10bp of the intron) of the listed genes, using the Illumina DNA Prep with enrichment hybrid capture followed by paired-end sequencing with the Illumina sequencing platform. Variant calls are generated using the UHN Clinical Laboratory Genetics custom bioinformatics pipeline with alignment to the reference genome sequence build GRCh37/hg19, and variants assessed using Alissa Interpret. For panels that include the EPCAM or GREM1 genes, only copy number variants are evaluated. Long-range PCR and Sanger sequencing were performed for confirmation of variants identified in PMS2 due to regions of high homology. Minimum acceptable coverage for all reported genomic regions is >25x. Exon level deletions or duplications were analyzed using DECON [PMID: 28459104] or using multiplex ligation-dependent probe amplification (MLPA) assays by MRC Holland. The reportable range is 20\%-100\% variant allele frequency. Test sensitivity for this assay is >98\%. Current methodology may not detect all variants or CNV changes present in the tested genes
-
+\newline
+\newline
 {\bf Variant Class Reported: } Variants were classified as pathogenic, likely pathogenic, uncertain, likely benign or benign according to 2015 ACMG guidelines (Richards et al 2015, PMID 25741868). Variants classified as likely benign or benign are not reported but are available upon request. 
 
 {\bf Regions with less than 25X read depth: \\}
