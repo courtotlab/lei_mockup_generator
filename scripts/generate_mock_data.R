@@ -5,7 +5,7 @@ library(yaml)
 library(hgvsParseR)
 library(RJSONIO)
 library(argparser)
-library(biomaRt)
+# (Removed unused biomaRt library import)
 
 #parse command line arguments
 ap <- arg_parser("generate a mock dataset in JSON format", name = "mockups.R")
