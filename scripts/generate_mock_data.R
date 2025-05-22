@@ -41,6 +41,57 @@ gen_uuid <- function() {
   )
 }
 
+# sample from a power-law distribution using rejection sampling
+rpow <- function(n, alpha = 1000, range = 5e5) {
+  # n: Number of samples to generate
+  # alpha: Power-law exponent (must be > 1)
+  # range: Range / tail-length of the distribution (default is 5e5)
+  if (alpha <= 1) {
+    stop("Alpha must be greater than 1 for a valid power-law distribution.")
+  }
+  # Define the target power-law probability density function
+  power_law_pdf <- function(x) {
+    ifelse(x >= 1, (alpha - 1) * x^(-alpha), 0)
+  }
+  # Define the proposal distribution (uniform in this case)
+  proposal_pdf <- function(x) {
+    ifelse(x >= 1, 1, 0)
+  }
+  # Find the maximum ratio of target PDF to proposal PDF
+  M <- (alpha - 1) * 1^(-alpha)
+  # Rejection sampling
+  samples <- numeric(0)
+  while (length(samples) < n) {
+    # Sample from the proposal distribution
+    x_proposal <- runif(1, min = 1, max = 1 * 10) # Adjust range as needed
+    # Compute acceptance probability
+    accprob <- power_law_pdf(x_proposal) / (M * proposal_pdf(x_proposal))
+    # Accept or reject the sample
+    if (runif(1) < accprob) {
+      samples <- c(samples, x_proposal)
+    }
+  }
+  # Scale the samples to the desired range
+  samples_out <- samples * range - range
+  return(samples_out)
+}
+
+# generate allele frequency, count and number
+gen_maf <- function(amount = 1, max_pop = 5e5) {
+  # sample allele number from normal distribution
+  an <- round(rnorm(amount, mean = max_pop, sd = max_pop / 5))
+  # sample allele count from power-law distribution
+  ac <- round(rpow(amount, alpha = 1000, range = max_pop))
+  # restrict allele count to be ranged between 0 and an, enrich zeroes
+  ac <- mapply(\(a, n) {
+    min(n, max(0, a))
+    # ifelse(a > n, n, ifelse(a < 0, 0, a)
+  }, ac - 100, an)
+  #calculate allele frequency
+  af <- ac / an
+  return(data.frame(ac = ac, an = an, af = af))
+}
+
 # Generate a set of threee dates (collected, received, verified)
 gen_dates <- function() {
   d1 <- paste0(
@@ -100,7 +151,7 @@ sample_variants <- function(genes) {
   num_variants <- max(1,rpois(1, 1))
   replicate(num_variants, {
     data <- list()
-    data$gene_symbol <- sample_field("genes", 1L)
+    data$gene_symbol <- sample(genes, 1L)
     data$variant_id <- gen_vcv()
     data$chromosome <- paste0("chr", 
       gene_info[data$gene_symbol, "chromosome_name"]
@@ -120,6 +171,7 @@ sample_variants <- function(genes) {
       field_values$interpretation, 1,
       prob = c(.6, .3, .1)
     )
+    data$maf <- gen_maf(1)[1, , drop = TRUE]
     data
   }, simplify = FALSE)
 }
