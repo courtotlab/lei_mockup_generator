@@ -146,10 +146,6 @@ long_blurb <- function(variants) {
       variant$type <- "stop"
     }
 
-    intro <- substitute(paste(
-      bold(variants$gene_symbol, variants$hgvsc, variants$hgvsp, 
-           variants$zygosity, variants$zygosity)
-    ))
   
     location <- paste(
       "The", variant$hgvsc, "occurs at position", variant$start,
