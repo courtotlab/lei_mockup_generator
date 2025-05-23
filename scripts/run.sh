@@ -6,8 +6,8 @@ mkdir -p "$OUTDIR"
 
 DATA="${OUTDIR}mock_data.json"
 
-Rscript generate_mock_data.R --amount 10 --outfile "$DATA"
-Rscript interpolate.R "$TEMPLATE" "$DATA" --outprefix "${OUTDIR}/report_"
+Rscript scripts/generate_mock_data.R --amount 10 --outfile "$DATA"
+Rscript scripts/interpolate.R "$TEMPLATE" "$DATA" --outprefix "${OUTDIR}/report_"
 cd "$OUTDIR"
 for TEXFILE in *.tex; do
   pdflatex "$TEXFILE" && 
