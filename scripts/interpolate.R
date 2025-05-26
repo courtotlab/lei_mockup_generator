@@ -16,20 +16,16 @@ ap <- add_argument(ap,
 )
 ap <- add_argument(ap,
   "json_file",
-  help = "json data file with the values to interpolate into the template (.json)"
+  help = "json data file with the values to 
+  interpolate into the template (.json)"
 )
 ap <- add_argument(ap,
   "--outprefix",
   help = "the output file"
 )
 args <- parse_args(ap)
-# args <- list(
-#   template_file = "templates/CHEO_template.tex",
-#   json_file = "mock_data.json",
-#   outprefix = "test/CHEO"
-# )
 if (is.na(args$outprefix)) {
-  args$outprefix = sub("\\.tex$", "", basename(args$template_file))
+  args$outprefix <- sub("\\.tex$", "", basename(args$template_file))
 }
 
 # Read the template
@@ -71,7 +67,13 @@ tex_escape <- function(str) {
     g("\\", "\\textasciibackslash") |>
     g("~", "\\textasciitilde") |>
     g("^", "\\textasciicircum") |>
-    e("%") |> e("&") |> e("$") |> e("#") |> e("_") |> e("{") |> e("}")
+    e("%") |>
+    e("&") |>
+    e("$") |>
+    e("#") |>
+    e("_") |>
+    e("{") |>
+    e("}")
 }
 
 #capitalize a word ("hello" -> "Hello")
@@ -131,7 +133,6 @@ summary_blurb <- function(variants, suffix = "detected.") {
   )
 }
 
-
 long_blurb <- function(variants) {
   #if there are no variants, we're done
   if (length(variants) == 0) {
@@ -139,18 +140,23 @@ long_blurb <- function(variants) {
   }
   hgvsps <- sapply(variants, `[[`, "hgvsp")
   var_data <- hgvsParseR::parseHGVS(hgvsps)
-
+  intro_sentence <- paste(
+    "The interpretation of these variants is as follows:",
+    summary_blurb(variants, suffix = " "),
+    if (length(variants) == 1) "was" else "were",
+    "detected in the sample."
+  )
   var_blurbs <- lapply(seq_along(variants), \(i) {
     variant <- c(variants[[i]], var_data[i, ])
     if (!is.na(variant$variant) && variant$variant == "Ter") {
       variant$type <- "stop"
     }
+    
+    generate_intro <- paste(
+      "{\\bf Variant", i, "of", length(variants),
+      variant$gene_symbol, "(", variant$hgvsc, variant$hgvsp, ")}", "\\newline"
+    )
 
-    intro <- substitute(paste(
-      bold(variants$gene_symbol, variants$hgvsc, variants$hgvsp, 
-           variants$zygosity, variants$zygosity)
-    ))
-  
     location <- paste(
       "The", variant$hgvsc, "occurs at position", variant$start,
       "in exon ", variant$exon, "of the", variant$gene_symbol,
@@ -162,12 +168,12 @@ long_blurb <- function(variants) {
         "causes an early translation termination at position",
         variant$start, "."
       ),
-    substitution = paste(
-      "causes an amino acid substitution, which replaces",
-      aaname(variant$ancestral), "with", aaname(variant$variant), "."
+      substitution = paste(
+        "causes an amino acid substitution, which replaces",
+        aaname(variant$ancestral), "with", aaname(variant$variant), "."
+      )
     )
-  )
-  interpretation_text <- if (grepl("uncertain", variant$interpretation)) {
+    interpretation_text <- if (grepl("uncertain", variant$interpretation)) {
       paste(
         "According to ClinVar, the evidence collected to date is",
         "insufficient to firmly establish the clinical significance of this",
@@ -180,33 +186,62 @@ long_blurb <- function(variants) {
         "classified as a", tolower(variant$interpretation), "variant."
       )
     }
-    Conservation_text <- paste(
-      "Functional studies have demonstrated that the",
-      variant$gene_symbol, variant$hgvsc,
-      "variant leads to abnormal behaviour of the", 
-      variant$gene_symbol, "gene.",
-      "This variant is located in a highly conserved region of the protein",
-      "and it is predicted to be damaging to the protein function,",
-      "contributing to oncogenesis.",
-      paste0(variant$ancestral, variant$start),
-      "residue is weakly conserved in evolution.",
-      "In silico analysis programs (SIFT, PolyPhen-2, Mutation Taster) predict",
-      "this variant",
-      if (grepl("uncertain", variant$interpretation)) {
-        "to be tolerated"
-      } else {
-        "not to be tolerated"
-      },
-      ". This variant is listed in ClinVar",
-      paste0("(", variant$variant_id, ")"),
-      "and it has been implicated in lung and blood cancers.",
-      "Pubmed references:", 
-      paste(sample(1e8:1e9, sample(3:8, 1)), collapse = ", ")
+    interp <- tolower(variant$interpretation)
+    clinical_statement <- switch(interp,
+      "variant of uncertain clinical significance" = paste(
+        "The clinical relevance of this variant remains unclear.",
+        "Currently, there is insufficient evidence 
+        to confirm or refute its role in disease."
+      ),
+      "likely pathogenic" = paste(
+        "This variant is considered likely pathogenic.",
+        "It has been associated with deleterious effects on protein function 
+        and may contribute to disease in affected individuals."
+      ),
+      "pathogenic" = paste(
+        "This variant is classified as pathogenic.",
+        "It is strongly associated with disease causation and has been reported
+        in multiple affected individuals and functional studies."
+      ),
+      paste(
+        "This variant has been reported with the interpretation:",
+        variant$interpretation, "."
+      )
     )
-    paste(location, effect, interpretation_text,
-          Conservation_text, sep = "\n")
+
+    implication_statement <- if (grepl("uncertain", interp)) {
+      "not currently strongly implicated in specific diseases"
+    } else {
+      "implicated in oncogenesis and other disease processes"
+    }
+
+    # Build the conservation_text block
+    conservation_text <- paste(
+      "ClinVar and other genomic databases report the",
+      variant$gene_symbol, variant$hgvsc,
+      "variant as clinically relevant based on aggregated evidence.",
+      "\n\n", clinical_statement,
+
+      "\n\nThe affected nucleotide lies within a region 
+  that is highly conserved across vertebrate species,",
+      "which suggests functional importance and evolutionary constraint.",
+      "\n\n
+      This variant is", implication_statement,
+      "according to ClinVar records",
+      paste0(" (VCV accession: ", variant$variant_id, ")."),
+
+      "\n\nSupporting studies and case reports can be found 
+  in the scientific literature.",
+      "Relevant PubMed references include:",
+      paste(sample(1e8:1e9, sample(3:8, 1)), collapse = ", "), "."
+)
+    paste(generate_intro, location, effect, interpretation_text,
+          conservation_text, sep = "\n")
   })
-  paste(var_blurbs, collapse = "\n\n")
+  paste(
+    intro_sentence, "\n\n",
+    paste0(var_blurbs, collapse = "\n\n")
+  )
 }
 
 #extract iterator sections
@@ -257,10 +292,10 @@ outputs <- lapply(names(mock_data), \(uuid) {
           txt <- sub(marker, blurb, txt, fixed = "TRUE")
         } else if (!(label %in% names(dataset))) {
           cat("Skipping unsupported label: ", label, "\n")
-          txt <- sub(marker, paste0("\\textit{Missing ", label, "}"), txt, fixed = TRUE)
+          txt <- sub(marker, paste0("\\it{Missing ", label, "}"),
+                     txt, fixed = TRUE)
         } else {
           value <- tex_escape(dataset[[label]])
-          # cat(label, " -> ", value, "\n")
           txt <- sub(marker, value, txt, fixed = "TRUE")
         }
       }
@@ -281,7 +316,6 @@ outputs <- lapply(names(mock_data), \(uuid) {
             row <- sub(marker, "MISSING DATA!", row, fixed = TRUE)
           } else {
             value <- tex_escape(sds[[label]])
-            # cat(label, " -> ", value, "\n")
             row <- sub(marker, value, row, fixed = TRUE)
           }
         }

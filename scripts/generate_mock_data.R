@@ -112,6 +112,8 @@ sample_variants <- function(genes) {
     # TODO: Add aapos, fromAA, toAA
     data$transcript_id <- gene_info[data$gene_symbol, "refseq_mrna"]
     # TODO: data$exon
+    #make function to query biomart for exon derived from variant position
+
     data$exon <- sample(1:20, 1)
     data$reference_genome <- "GRCh38"
     data$zygosity <- sample(
@@ -125,6 +127,8 @@ sample_variants <- function(genes) {
     data
   }, simplify = FALSE)
 }
+
+
 
 gen_genes <- function() {
   gene_symbols <- sample_field("genes", round(runif(1, 5, 20)))
@@ -183,8 +187,6 @@ out <- replicate(num_reports, {
   generate_mockup()
 }, simplify = FALSE)
 names(out) <- uuids
-
-# print(out)
 
 #write JSON output to file
 json_out <- toJSON(out)
