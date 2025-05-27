@@ -5,6 +5,7 @@ library(yaml)
 library(hgvsParseR)
 library(RJSONIO)
 library(argparser)
+# (Removed unused biomaRt library import)
 
 #parse command line arguments
 ap <- arg_parser("generate a mock dataset in JSON format", name = "mockups.R")
@@ -148,7 +149,7 @@ gen_vcv <- function(amount=1) {
 
 #Sample random variants
 sample_variants <- function(genes) {
-  num_variants <- max(1,rpois(1, 1))
+  num_variants <- max(1, rpois(1, 1))
   replicate(num_variants, {
     data <- list()
     data$gene_symbol <- sample(genes, 1L)
@@ -162,6 +163,7 @@ sample_variants <- function(genes) {
     # TODO: Add aapos, fromAA, toAA
     data$transcript_id <- gene_info[data$gene_symbol, "refseq_mrna"]
     # TODO: data$exon
+    data$exon <- sample(1:20, 1)
     data$reference_genome <- "GRCh38"
     data$zygosity <- sample(
       field_values$zygosity, 1,
