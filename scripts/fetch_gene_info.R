@@ -64,7 +64,8 @@ exons <- getBM(
     "exon_chrom_start",
     "exon_chrom_end",
     "rank", # rank or exon number within the transcript
-    "ensembl_transcript_id"
+    "ensembl_transcript_id", 
+    "chromosome_name"
   ),
   filters = "external_gene_name",
   values = gene_table$genes,

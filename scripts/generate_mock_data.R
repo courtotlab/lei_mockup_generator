@@ -75,10 +75,9 @@ gen_hgvs <- function(var_data, gene) {
     })
   })
   b <- new.hgvs.builder.g()
-  cds_start <- gene_info[gene,"start_position"]
   hgvsg <- sapply(seq_len(nrow(var_data)), \(i) {
     with(var_data[i, ], {
-      b$substitution(cds_start + pos - 1, from, to)
+      b$substitution(gene_info[gene, "start_position"] + pos - 1, from, to)
     })
   })
   cds_seq <- gene_info[gene, "coding"]
@@ -95,19 +94,24 @@ gen_vcv <- function(amount=1) {
   })
 }
 
-find_variant_exon <- function(variant_chr, variant_pos, gene_symbol) {
-  matches <- exons_df[
-    exons_df$external_gene_name == gene_symbol &
-      exons_df$chromosome_name == variant_chr &
-      exons_df$exon_chrom_start <= variant_pos &
-      exons_df$exon_chrom_end >= variant_pos,
-  ]
-  if (nrow(matches) > 0) {
-    return(matches$rank[1])  # rank = exon number
+# Declare external_gene_name as a global variable to avoid binding warnings
+globalVariables(c("external_gene_name"))
+
+find_exon_number <- function(variant_pos, gene_symbol, exons_df, chr_name) {
+  # Filter exons for the gene
+  # Find exon where variant_pos lies between exon start and end
+  exons_gene <- subset(exons_df, external_gene_name == gene_symbol
+                       & chromosome_name == chr_name)
+  exon_match <- exons_gene[
+                           variant_pos >= exons_gene$exon_chrom_start &
+                             variant_pos <= exons_gene$exon_chrom_end, ]
+  if (nrow(exon_match) == 0) {
+    return(NA)  # variant not in any exon
   } else {
-    return(NA)
+    return(exon_match$rank)
   }
 }
+
 
 
 
@@ -127,11 +131,7 @@ sample_variants <- function(genes) {
     # TODO: Add aapos, fromAA, toAA
     data$transcript_id <- gene_info[data$gene_symbol, "refseq_mrna"]
     # TODO: data$exon
-    data$exon <- find_variant_exon(
-      data$chromosome,
-      as.numeric(data$hgvsg),
-      data$gene_symbol
-    )
+    data$exon <- find_exon_number(var_data$pos, data$gene_symbol, exons_df)
     #make function to query biomart for exon derived from variant position
     data$reference_genome <- "GRCh38"
     data$zygosity <- sample(
