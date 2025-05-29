@@ -5,8 +5,6 @@ library(yaml)
 library(hgvsParseR)
 library(RJSONIO)
 library(argparser)
-library(biomaRt)
-
 #parse command line arguments
 ap <- arg_parser("generate a mock dataset in JSON format", name = "mockups.R")
 ap <- add_argument(ap,
@@ -26,6 +24,7 @@ out_file <- args$outfile
 #Load source data
 field_values <- yaml.load_file("data/field_values.yml")
 gene_info <- read.csv("data/gene_info.csv", row.names = 1)
+exons_df <- read.csv("data/exon_info.csv", stringsAsFactors = FALSE)
 
 # Helper function to sample from fields
 sample_field <- function(name, num = 1) sample(field_values[[name]], num)
@@ -96,6 +95,22 @@ gen_vcv <- function(amount=1) {
   })
 }
 
+find_variant_exon <- function(variant_chr, variant_pos, gene_symbol) {
+  matches <- exons_df[
+    exons_df$external_gene_name == gene_symbol &
+      exons_df$chromosome_name == variant_chr &
+      exons_df$exon_chrom_start <= variant_pos &
+      exons_df$exon_chrom_end >= variant_pos,
+  ]
+  if (nrow(matches) > 0) {
+    return(matches$rank[1])  # rank = exon number
+  } else {
+    return(NA)
+  }
+}
+
+
+
 #Sample random variants
 sample_variants <- function(genes) {
   num_variants <- max(1, rpois(1, 1))
@@ -112,9 +127,12 @@ sample_variants <- function(genes) {
     # TODO: Add aapos, fromAA, toAA
     data$transcript_id <- gene_info[data$gene_symbol, "refseq_mrna"]
     # TODO: data$exon
+    data$exon <- find_variant_exon(
+      data$chromosome,
+      as.numeric(data$hgvsg),
+      data$gene_symbol
+    )
     #make function to query biomart for exon derived from variant position
-
-    data$exon <- sample(1:20, 1)
     data$reference_genome <- "GRCh38"
     data$zygosity <- sample(
       field_values$zygosity, 1,
@@ -127,8 +145,6 @@ sample_variants <- function(genes) {
     data
   }, simplify = FALSE)
 }
-
-
 
 gen_genes <- function() {
   gene_symbols <- sample_field("genes", round(runif(1, 5, 20)))

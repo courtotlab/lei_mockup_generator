@@ -159,7 +159,7 @@ long_blurb <- function(variants) {
     location <- paste(
       "The", variant$hgvsc, "occurs at position", variant$start,
       "in exon ", variant$exon, "of the", variant$gene_symbol,
-      "within chromosome ", variant$chromosome, ". It causes "
+      "within chromosome ", variant$chromosome, ". It "
     )
     effect <- switch(variant$type,
       synonymous = "causes no amino acid change.",
