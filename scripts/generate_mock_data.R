@@ -22,9 +22,9 @@ num_reports <- args$amount
 out_file <- args$outfile
 
 #Load source data
-field_values <- yaml.load_file("data/field_values.yml")
-gene_info <- read.csv("data/gene_info.csv", row.names = 1)
-exons_df <- read.csv("data/exon_info.csv", stringsAsFactors = FALSE)
+gene_info <- read.csv("../data/gene_info.csv", row.names = 1)
+field_values <- yaml.load_file("../data/field_values.yml")
+exons_df <- read.csv("../data/exon_info.csv", stringsAsFactors = FALSE)
 
 # Helper function to sample from fields
 sample_field <- function(name, num = 1) sample(field_values[[name]], num)
@@ -58,13 +58,54 @@ gen_dates <- function() {
 
 # Generate mock variants
 # TODO: Future iterations could sample from Clinvar instead
+# Pre-filter valid genes with non-empty CDS
+valid_genes <- rownames(gene_info)[
+  !is.na(gene_info$coding) & nchar(gene_info$coding) > 0
+]
+
+# Fallback gene if a chosen gene has no valid CDS (choose any valid gene here)
+fallback_gene <- if (length(valid_genes) > 0) valid_genes[1] else NA
+
 gen_var <- function(gene, amount = 1) {
+  # Check if gene is valid, else substitute fallback
+  if (!(gene %in% valid_genes)) {
+    warning(sprintf("Gene '%s' has no valid CDS, substituting with fallback gene '%s'", gene, fallback_gene))
+    gene <- fallback_gene
+  }
+  
   cds <- gene_info[gene, "coding"]
-  pos <- sample(nchar(cds), amount)
-  from <- sapply(pos, \(p) substr(cds, p, p))
-  to <- sapply(from, \(fr) sample(setdiff(c("A", "C", "G", "T"), fr), 1))
+  
+  if (is.na(cds) || nchar(cds) == 0) {
+    stop(sprintf("CDS sequence missing or empty for gene '%s'", gene))
+  }
+  
+  cds_length <- nchar(cds)
+  if (cds_length < 1) {
+    stop(sprintf("CDS sequence length < 1 for gene '%s'", gene))
+  }
+  
+  pos <- sample(cds_length, amount, replace = TRUE)
+  
+  # Check if pos has valid values
+  if (any(is.na(pos)) || any(pos < 1) || !is.numeric(pos)) {
+    stop("Sampled position 'pos' contains invalid values")
+  }
+  
+  from <- sapply(pos, function(p) substr(cds, p, p))
+  
+  to <- sapply(from, function(fr) {
+    if (!(fr %in% c("A", "C", "G", "T"))) {
+      warning(sprintf("Unexpected nucleotide '%s' found at position %d", fr, pos))
+    }
+    sample(setdiff(c("A", "C", "G", "T"), fr), 1)
+  })
+  
   data.frame(pos = pos, from = from, to = as.vector(to))
 }
+
+
+
+
 
 # Generate HGVS identifiers for variants
 gen_hgvs <- function(var_data, gene) {
@@ -119,9 +160,6 @@ find_exon_number <- function(chromosome, hgvsg, gene_symbol, exons_df) {
     return(NA)
   }
 }
-
-
-
 
 
 #Sample random variants

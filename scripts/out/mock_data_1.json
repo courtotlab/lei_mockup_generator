@@ -1,0 +1,800 @@
+{
+ "2eb39504-57fd-4c96-96e5-f345cbe3476f": {
+ "date_collected": "2025-01-10 02:09:00",
+"date_received": "2025-01-10 17:51:51",
+"date_verified": "2025-01-11 22:29:34",
+"report_type": "Molecular Genetics",
+"testing_context": "Research",
+"ordering_clinic": "Peterborough Regional Health Centre (Peterborough)",
+"testing_laboratory": "Sinai Health System (Toronto)",
+"sequencing_scope": "Whole exome sequencing (WES)",
+"tested_genes": {
+ "GOPC": {
+ "gene_symbol": "GOPC",
+"refseq_mrna": "NM_020399.4" 
+},
+"BCL11A": {
+ "gene_symbol": "BCL11A",
+"refseq_mrna": "NM_022893.4" 
+},
+"SEPT9": {
+ "gene_symbol": "SEPT9",
+"refseq_mrna": null 
+},
+"ERC2": {
+ "gene_symbol": "ERC2",
+"refseq_mrna": "NM_015576.3" 
+},
+"NOTCH4": {
+ "gene_symbol": "NOTCH4",
+"refseq_mrna": "NM_004557.4" 
+},
+"EBF1": {
+ "gene_symbol": "EBF1",
+"refseq_mrna": "NM_024007.5" 
+},
+"HSPB8": {
+ "gene_symbol": "HSPB8",
+"refseq_mrna": "NM_014365.3" 
+},
+"SRSF3": {
+ "gene_symbol": "SRSF3",
+"refseq_mrna": "NM_003017.5" 
+},
+"CSMD3": {
+ "gene_symbol": "CSMD3",
+"refseq_mrna": "NM_198123.2" 
+},
+"MAPK8": {
+ "gene_symbol": "MAPK8",
+"refseq_mrna": "NM_139049.4" 
+},
+"LRRK1": {
+ "gene_symbol": "LRRK1",
+"refseq_mrna": "NM_024652.6" 
+},
+"HIST1H4E": {
+ "gene_symbol": "HIST1H4E",
+"refseq_mrna": null 
+} 
+},
+"num_tested_genes": 12,
+"sample_type": "Other DNA enrichments",
+"analysis_type": "Fusion analysis",
+"variants": [
+ {
+ "gene_symbol": "HFE",
+"variant_id": "VCV001974063",
+"chromosome": "chr6",
+"hgvsg": "g.26087942G>A",
+"hgvsc": "c.717G>A",
+"hgvsp": "p.Trp239Ter",
+"transcript_id": "NM_000410.4",
+"exon": 1,
+"reference_genome": "GRCh38",
+"zygosity": "homozygous",
+"interpretation": "Variant of uncertain clinical significance" 
+} 
+],
+"num_variants": 1 
+},
+"ddb58f48-d090-446c-9478-c74409db76ea": {
+ "date_collected": "2020-04-27 14:37:00",
+"date_received": "2020-04-28 05:30:46",
+"date_verified": "2020-04-29 07:27:08",
+"report_type": "Molecular Genetics",
+"testing_context": "Clinical",
+"ordering_clinic": "Hamilton Health Sciences (Hamilton)",
+"testing_laboratory": "London Health Sciences Centre (London)",
+"sequencing_scope": "Whole exome sequencing (WES)",
+"tested_genes": {
+ "KDM5C": {
+ "gene_symbol": "KDM5C",
+"refseq_mrna": "NM_004187.5" 
+},
+"MMP2": {
+ "gene_symbol": "MMP2",
+"refseq_mrna": "NM_004530.6" 
+},
+"FBN2": {
+ "gene_symbol": "FBN2",
+"refseq_mrna": "NM_001999.4" 
+},
+"NUP98": {
+ "gene_symbol": "NUP98",
+"refseq_mrna": "NM_016320.5" 
+},
+"MSN": {
+ "gene_symbol": "MSN",
+"refseq_mrna": "NM_002444.3" 
+},
+"HIST1H4D": {
+ "gene_symbol": "HIST1H4D",
+"refseq_mrna": null 
+},
+"TNFAIP3": {
+ "gene_symbol": "TNFAIP3",
+"refseq_mrna": "NM_006290.4" 
+},
+"ERBB3": {
+ "gene_symbol": "ERBB3",
+"refseq_mrna": "NM_001982.4" 
+},
+"SGK1": {
+ "gene_symbol": "SGK1",
+"refseq_mrna": "NM_001143676.3" 
+},
+"TFRC": {
+ "gene_symbol": "TFRC",
+"refseq_mrna": "NM_001128148.3" 
+},
+"GALNT15": {
+ "gene_symbol": "GALNT15",
+"refseq_mrna": "NM_054110.5" 
+},
+"ATP2B3": {
+ "gene_symbol": "ATP2B3",
+"refseq_mrna": "NM_001001344.3" 
+},
+"MSH2": {
+ "gene_symbol": "MSH2",
+"refseq_mrna": "NM_000251.3" 
+},
+"PPP2R1A": {
+ "gene_symbol": "PPP2R1A",
+"refseq_mrna": "NM_014225.6" 
+},
+"CUX1": {
+ "gene_symbol": "CUX1",
+"refseq_mrna": "NM_181552.4" 
+},
+"FOXO1": {
+ "gene_symbol": "FOXO1",
+"refseq_mrna": "NM_002015.4" 
+},
+"CRLF2": {
+ "gene_symbol": "CRLF2",
+"refseq_mrna": "NM_022148.4" 
+} 
+},
+"num_tested_genes": 17,
+"sample_type": "Total RNA",
+"analysis_type": "Methylation analysis",
+"variants": [
+ {
+ "gene_symbol": "BCL11B",
+"variant_id": "VCV007723350",
+"chromosome": "chr14",
+"hgvsg": "g.99170451C>A",
+"hgvsc": "c.1165C>A",
+"hgvsp": "p.His389Asn",
+"transcript_id": "NM_138576.4",
+"exon": 3,
+"reference_genome": "GRCh38",
+"zygosity": "heterozygous",
+"interpretation": "Variant of uncertain clinical significance" 
+} 
+],
+"num_variants": 1 
+},
+"6e36d74a-32f5-4b4e-ab11-2112ff08cb2f": {
+ "date_collected": "2020-04-15 03:08:00",
+"date_received": "2020-04-15 13:17:37",
+"date_verified": "2020-04-16 15:46:32",
+"report_type": "Molecular Genetics",
+"testing_context": "Research",
+"ordering_clinic": "Hamilton Health Sciences (Hamilton)",
+"testing_laboratory": "Hospital for Sick Children (Toronto)",
+"sequencing_scope": "Gene panel",
+"tested_genes": {
+ "RHEB": {
+ "gene_symbol": "RHEB",
+"refseq_mrna": "NM_005614.4" 
+},
+"GFI1B": {
+ "gene_symbol": "GFI1B",
+"refseq_mrna": "NM_001377304.1" 
+},
+"LIN28B": {
+ "gene_symbol": "LIN28B",
+"refseq_mrna": "NM_001004317.4" 
+},
+"DDX60": {
+ "gene_symbol": "DDX60",
+"refseq_mrna": "NM_017631.6" 
+},
+"PRDM1": {
+ "gene_symbol": "PRDM1",
+"refseq_mrna": "NM_001198.4" 
+},
+"RIMS2": {
+ "gene_symbol": "RIMS2",
+"refseq_mrna": "NM_001348484.3" 
+},
+"FGFR2": {
+ "gene_symbol": "FGFR2",
+"refseq_mrna": "NM_000141.5" 
+},
+"DPP10": {
+ "gene_symbol": "DPP10",
+"refseq_mrna": "NM_020868.6" 
+},
+"SBDS": {
+ "gene_symbol": "SBDS",
+"refseq_mrna": "NM_016038.4" 
+},
+"TAF1L": {
+ "gene_symbol": "TAF1L",
+"refseq_mrna": "NM_153809.2" 
+},
+"CACNA1D": {
+ "gene_symbol": "CACNA1D",
+"refseq_mrna": "NM_001128840.3" 
+},
+"BRCA1": {
+ "gene_symbol": "BRCA1",
+"refseq_mrna": "NM_007294.4" 
+},
+"NLRP5": {
+ "gene_symbol": "NLRP5",
+"refseq_mrna": "NM_153447.4" 
+},
+"ATF7IP": {
+ "gene_symbol": "ATF7IP",
+"refseq_mrna": "NM_018179.5" 
+} 
+},
+"num_tested_genes": 14,
+"sample_type": "Amplified DNA",
+"analysis_type": "Methylation analysis",
+"variants": [
+ {
+ "gene_symbol": "TP53BP1",
+"variant_id": "VCV002345647",
+"chromosome": "chr15",
+"hgvsg": "g.43405473A>T",
+"hgvsc": "c.2413A>T",
+"hgvsp": "p.Asn805Tyr",
+"transcript_id": "NM_001141980.3",
+"exon": 28,
+"reference_genome": "GRCh38",
+"zygosity": "heterozygous",
+"interpretation": "Variant of uncertain clinical significance" 
+} 
+],
+"num_variants": 1 
+},
+"5348a8a0-c4f5-4c63-a808-c2c8fe3eadd9": {
+ "date_collected": "2024-05-25 09:10:00",
+"date_received": "2024-05-25 10:08:20",
+"date_verified": "2024-05-26 21:54:22",
+"report_type": "Pathology",
+"testing_context": "Clinical",
+"ordering_clinic": "Orillia Soldiers Memorial Hospital (Orillia, Simcoe/Muskoka)",
+"testing_laboratory": "North York General Hospital (Toronto)",
+"sequencing_scope": "Whole genome sequencing (WGS)",
+"tested_genes": {
+ "CHCHD7": {
+ "gene_symbol": "CHCHD7",
+"refseq_mrna": "NM_001011671.3" 
+},
+"NFIB": {
+ "gene_symbol": "NFIB",
+"refseq_mrna": "NM_001190737.2" 
+},
+"CCND3": {
+ "gene_symbol": "CCND3",
+"refseq_mrna": "NM_001760.5" 
+},
+"EPS15": {
+ "gene_symbol": "EPS15",
+"refseq_mrna": "NM_001981.3" 
+},
+"TERT": {
+ "gene_symbol": "TERT",
+"refseq_mrna": "NM_198253.3" 
+},
+"TCEB1": {
+ "gene_symbol": "TCEB1",
+"refseq_mrna": null 
+},
+"KMT2D": {
+ "gene_symbol": "KMT2D",
+"refseq_mrna": "NM_003482.4" 
+},
+"KDM5A": {
+ "gene_symbol": "KDM5A",
+"refseq_mrna": "NM_001042603.3" 
+},
+"ARID1A": {
+ "gene_symbol": "ARID1A",
+"refseq_mrna": "NM_006015.6" 
+},
+"ALK": {
+ "gene_symbol": "ALK",
+"refseq_mrna": "NM_004304.5" 
+} 
+},
+"num_tested_genes": 10,
+"sample_type": "Total DNA",
+"analysis_type": "Fusion analysis",
+"variants": [
+ {
+ "gene_symbol": "DNM2",
+"variant_id": "VCV003980091",
+"chromosome": "chr19",
+"hgvsg": "g.10718832C>G",
+"hgvsc": "c.778C>G",
+"hgvsp": "p.Leu260Val",
+"transcript_id": "NM_001005361.3",
+"exon": null,
+"reference_genome": "GRCh38",
+"zygosity": "heterozygous",
+"interpretation": "Likely pathogenic" 
+} 
+],
+"num_variants": 1 
+},
+"9612ac47-9467-47b7-ad6d-9badf42b6191": {
+ "date_collected": "2024-09-15 23:25:00",
+"date_received": "2024-09-17 07:09:39",
+"date_verified": "2024-09-18 20:10:35",
+"report_type": "Molecular Genetics",
+"testing_context": "Research",
+"ordering_clinic": "Sunnybrook Health Sciences (Toronto)",
+"testing_laboratory": "Kingston Health Sciences Centre (Kingston)",
+"sequencing_scope": "Gene panel",
+"tested_genes": {
+ "MLLT3": {
+ "gene_symbol": "MLLT3",
+"refseq_mrna": "NM_004529.4" 
+},
+"LRRK2": {
+ "gene_symbol": "LRRK2",
+"refseq_mrna": "NM_198578.4" 
+},
+"FMN2": {
+ "gene_symbol": "FMN2",
+"refseq_mrna": "NM_020066.5" 
+},
+"BCL11B": {
+ "gene_symbol": "BCL11B",
+"refseq_mrna": "NM_138576.4" 
+},
+"FLCN": {
+ "gene_symbol": "FLCN",
+"refseq_mrna": "NM_144997.7" 
+},
+"MYB": {
+ "gene_symbol": "MYB",
+"refseq_mrna": "NM_001130173.2" 
+},
+"GAS7": {
+ "gene_symbol": "GAS7",
+"refseq_mrna": "NM_201433.2" 
+},
+"FOXP1": {
+ "gene_symbol": "FOXP1",
+"refseq_mrna": "NM_001349338.3" 
+} 
+},
+"num_tested_genes": 8,
+"sample_type": "Ribo-Zero RNA",
+"analysis_type": "Karyotyping",
+"variants": [
+ {
+ "gene_symbol": "HDAC6",
+"variant_id": "VCV004013907",
+"chromosome": "chrX",
+"hgvsg": "g.48804628G>T",
+"hgvsc": "c.3252G>T",
+"hgvsp": "p.Gln1084His",
+"transcript_id": "NM_006044.4",
+"exon": null,
+"reference_genome": "GRCh38",
+"zygosity": "heterozygous",
+"interpretation": "Likely pathogenic" 
+} 
+],
+"num_variants": 1 
+},
+"fce1e681-5a6a-4e6e-a9fc-ede405108c90": {
+ "date_collected": "2023-11-04 08:07:00",
+"date_received": "2023-11-05 22:15:19",
+"date_verified": "2023-11-07 13:05:20",
+"report_type": "Molecular Genetics",
+"testing_context": "Research",
+"ordering_clinic": "Health Sciences North (Sudbury)",
+"testing_laboratory": "Hamilton Health Sciences (Hamilton)",
+"sequencing_scope": "Targeted variant testing",
+"tested_genes": {
+ "ERCC3": {
+ "gene_symbol": "ERCC3",
+"refseq_mrna": "NM_001303418.2" 
+},
+"ARID5B": {
+ "gene_symbol": "ARID5B",
+"refseq_mrna": "NM_032199.3" 
+},
+"PAX8": {
+ "gene_symbol": "PAX8",
+"refseq_mrna": "NM_003466.4" 
+},
+"WIF1": {
+ "gene_symbol": "WIF1",
+"refseq_mrna": "NM_007191.5" 
+},
+"MTAP": {
+ "gene_symbol": "MTAP",
+"refseq_mrna": "NM_002451.4" 
+},
+"TCF7L2": {
+ "gene_symbol": "TCF7L2",
+"refseq_mrna": "NM_001367943.1" 
+},
+"TCEA1": {
+ "gene_symbol": "TCEA1",
+"refseq_mrna": "NM_006756.4" 
+} 
+},
+"num_tested_genes": 7,
+"sample_type": "Ribo-Zero RNA",
+"analysis_type": "Variant analysis",
+"variants": [
+ {
+ "gene_symbol": "TRIM27",
+"variant_id": "VCV003035925",
+"chromosome": "chr6",
+"hgvsg": "g.169531G>T",
+"hgvsc": "c.948G>T",
+"hgvsp": "p.Val316=",
+"transcript_id": "NM_006510.5",
+"exon": null,
+"reference_genome": "GRCh38",
+"zygosity": "homozygous",
+"interpretation": "Likely pathogenic" 
+},
+{
+ "gene_symbol": "TET1",
+"variant_id": "VCV007191150",
+"chromosome": "chr10",
+"hgvsg": "g.68566148C>G",
+"hgvsc": "c.5812C>G",
+"hgvsp": "p.Gln1938Glu",
+"transcript_id": "NM_030625.3",
+"exon": null,
+"reference_genome": "GRCh38",
+"zygosity": "heterozygous",
+"interpretation": "Variant of uncertain clinical significance" 
+} 
+],
+"num_variants": 2 
+},
+"b1041cbc-632d-406b-8d82-d45286ca0747": {
+ "date_collected": "2024-01-26 01:55:00",
+"date_received": "2024-01-27 15:15:13",
+"date_verified": "2024-01-27 21:00:14",
+"report_type": "Molecular Genetics",
+"testing_context": "Research",
+"ordering_clinic": "Lakeridge Health (Oshawa)",
+"testing_laboratory": "North York General Hospital (Toronto)",
+"sequencing_scope": "Gene panel",
+"tested_genes": {
+ "CCNB1IP1": {
+ "gene_symbol": "CCNB1IP1",
+"refseq_mrna": "NM_021178.5" 
+},
+"MECOM": {
+ "gene_symbol": "MECOM",
+"refseq_mrna": "NM_004991.4" 
+},
+"MLH1": {
+ "gene_symbol": "MLH1",
+"refseq_mrna": "NM_000249.4" 
+},
+"GPC3": {
+ "gene_symbol": "GPC3",
+"refseq_mrna": "NM_004484.4" 
+},
+"FH": {
+ "gene_symbol": "FH",
+"refseq_mrna": "NM_000143.4" 
+} 
+},
+"num_tested_genes": 5,
+"sample_type": "Other RNA fractions",
+"analysis_type": "Karyotyping",
+"variants": [
+ {
+ "gene_symbol": "PRKAR1A",
+"variant_id": "VCV003769514",
+"chromosome": "chr17",
+"hgvsg": "g.68512452G>C",
+"hgvsc": "c.673G>C",
+"hgvsp": "p.Gly225Arg",
+"transcript_id": "NM_002734.5",
+"exon": 1,
+"reference_genome": "GRCh38",
+"zygosity": "heterozygous",
+"interpretation": "Likely pathogenic" 
+},
+{
+ "gene_symbol": "MDM2",
+"variant_id": "VCV006948469",
+"chromosome": "chr12",
+"hgvsg": "g.68809208A>T",
+"hgvsc": "c.1032A>T",
+"hgvsp": "p.Lys344Asn",
+"transcript_id": "NM_002392.6",
+"exon": 2,
+"reference_genome": "GRCh38",
+"zygosity": "heterozygous",
+"interpretation": "Variant of uncertain clinical significance" 
+} 
+],
+"num_variants": 2 
+},
+"3c81c11f-7b0c-43b5-902f-2b6f2f4ec9d3": {
+ "date_collected": "2024-12-19 14:51:00",
+"date_received": "2024-12-21 18:51:33",
+"date_verified": "2024-12-23 10:38:18",
+"report_type": "Molecular Genetics",
+"testing_context": "Research",
+"ordering_clinic": "Sinai Health System (Toronto)",
+"testing_laboratory": "North York General Hospital (Toronto)",
+"sequencing_scope": "Targeted variant testing",
+"tested_genes": {
+ "GFI1B": {
+ "gene_symbol": "GFI1B",
+"refseq_mrna": "NM_001377304.1" 
+},
+"MYCN": {
+ "gene_symbol": "MYCN",
+"refseq_mrna": "NM_005378.6" 
+},
+"SDHD": {
+ "gene_symbol": "SDHD",
+"refseq_mrna": "NM_003002.4" 
+},
+"SBDS": {
+ "gene_symbol": "SBDS",
+"refseq_mrna": "NM_016038.4" 
+},
+"JMJD1C": {
+ "gene_symbol": "JMJD1C",
+"refseq_mrna": "NM_032776.3" 
+},
+"HOXA13": {
+ "gene_symbol": "HOXA13",
+"refseq_mrna": "NM_000522.5" 
+},
+"TNFRSF17": {
+ "gene_symbol": "TNFRSF17",
+"refseq_mrna": "NM_001192.3" 
+},
+"LHFP": {
+ "gene_symbol": "LHFP",
+"refseq_mrna": null 
+},
+"SRC": {
+ "gene_symbol": "SRC",
+"refseq_mrna": "NM_005417.5" 
+},
+"BCR": {
+ "gene_symbol": "BCR",
+"refseq_mrna": "NM_004327.4" 
+},
+"FCRL2": {
+ "gene_symbol": "FCRL2",
+"refseq_mrna": "NM_030764.4" 
+},
+"CD79B": {
+ "gene_symbol": "CD79B",
+"refseq_mrna": "NM_000626.4" 
+} 
+},
+"num_tested_genes": 12,
+"sample_type": "Other RNA fractions",
+"analysis_type": "Fusion analysis",
+"variants": [
+ {
+ "gene_symbol": "LRRTM4",
+"variant_id": "VCV004379861",
+"chromosome": "chr2",
+"hgvsg": "g.76748546A>T",
+"hgvsc": "c.862A>T",
+"hgvsp": "p.Lys288Ter",
+"transcript_id": "NM_001134745.3",
+"exon": 3,
+"reference_genome": "GRCh38",
+"zygosity": "heterozygous",
+"interpretation": "Likely pathogenic" 
+},
+{
+ "gene_symbol": "GPHN",
+"variant_id": "VCV006310403",
+"chromosome": "chr14",
+"hgvsg": "g.66508245C>G",
+"hgvsc": "c.839C>G",
+"hgvsp": "p.Ser280Cys",
+"transcript_id": "NM_020806.5",
+"exon": 1,
+"reference_genome": "GRCh38",
+"zygosity": "heterozygous",
+"interpretation": "Variant of uncertain clinical significance" 
+},
+{
+ "gene_symbol": "RECQL4",
+"variant_id": "VCV009529359",
+"chromosome": "chr8",
+"hgvsg": "g.144513971G>T",
+"hgvsc": "c.2684G>T",
+"hgvsp": "p.Arg895Met",
+"transcript_id": "NM_004260.4",
+"exon": 12,
+"reference_genome": "GRCh38",
+"zygosity": "heterozygous",
+"interpretation": "Variant of uncertain clinical significance" 
+} 
+],
+"num_variants": 3 
+},
+"70b5fc29-7d21-4ca3-9722-fe3e965096d4": {
+ "date_collected": "2020-05-24 09:16:00",
+"date_received": "2020-05-25 07:47:04",
+"date_verified": "2020-05-25 18:50:24",
+"report_type": "Molecular Genetics",
+"testing_context": "Clinical",
+"ordering_clinic": "Sunnybrook Health Sciences (Toronto)",
+"testing_laboratory": "Hamilton Health Sciences (Hamilton)",
+"sequencing_scope": "Whole transcriptome sequencing (WTS)",
+"tested_genes": {
+ "RAC1": {
+ "gene_symbol": "RAC1",
+"refseq_mrna": "NM_006908.5" 
+},
+"NFE2L2": {
+ "gene_symbol": "NFE2L2",
+"refseq_mrna": "NM_006164.5" 
+},
+"CHD4": {
+ "gene_symbol": "CHD4",
+"refseq_mrna": "NM_001273.5" 
+},
+"QKI": {
+ "gene_symbol": "QKI",
+"refseq_mrna": "NM_006775.3" 
+},
+"AFF4": {
+ "gene_symbol": "AFF4",
+"refseq_mrna": "NM_014423.4" 
+},
+"CHD3": {
+ "gene_symbol": "CHD3",
+"refseq_mrna": "NM_001005273.3" 
+},
+"POU2F2": {
+ "gene_symbol": "POU2F2",
+"refseq_mrna": "NM_001394376.1" 
+},
+"MAP3K7": {
+ "gene_symbol": "MAP3K7",
+"refseq_mrna": "NM_145331.3" 
+},
+"PSIP1": {
+ "gene_symbol": "PSIP1",
+"refseq_mrna": "NM_033222.5" 
+},
+"ATIC": {
+ "gene_symbol": "ATIC",
+"refseq_mrna": "NM_004044.7" 
+},
+"LRFN5": {
+ "gene_symbol": "LRFN5",
+"refseq_mrna": "NM_152447.5" 
+},
+"LIN28B": {
+ "gene_symbol": "LIN28B",
+"refseq_mrna": "NM_001004317.4" 
+} 
+},
+"num_tested_genes": 12,
+"sample_type": "Amplified DNA",
+"analysis_type": "Karyotyping",
+"variants": [
+ {
+ "gene_symbol": "HOXC11",
+"variant_id": "VCV006296538",
+"chromosome": "chr12",
+"hgvsg": "g.53973893T>G",
+"hgvsc": "c.768T>G",
+"hgvsp": "p.Tyr256Ter",
+"transcript_id": "NM_014212.4",
+"exon": 1,
+"reference_genome": "GRCh38",
+"zygosity": "heterozygous",
+"interpretation": "Variant of uncertain clinical significance" 
+} 
+],
+"num_variants": 1 
+},
+"fcdc33be-3f6a-44a6-93e2-23bccdb55172": {
+ "date_collected": "2022-07-01 08:31:00",
+"date_received": "2022-07-02 14:28:21",
+"date_verified": "2022-07-04 01:13:06",
+"report_type": "Pathology",
+"testing_context": "Clinical",
+"ordering_clinic": "Trillium Health Partners (Mississauga)",
+"testing_laboratory": "London Health Sciences Centre (London)",
+"sequencing_scope": "Targeted variant testing",
+"tested_genes": {
+ "CD70": {
+ "gene_symbol": "CD70",
+"refseq_mrna": "NM_001252.5" 
+},
+"ING1": {
+ "gene_symbol": "ING1",
+"refseq_mrna": "NM_198219.3" 
+},
+"ERC2": {
+ "gene_symbol": "ERC2",
+"refseq_mrna": "NM_015576.3" 
+},
+"TCEA1": {
+ "gene_symbol": "TCEA1",
+"refseq_mrna": "NM_006756.4" 
+},
+"COX6C": {
+ "gene_symbol": "COX6C",
+"refseq_mrna": "NM_004374.4" 
+},
+"PCBP1": {
+ "gene_symbol": "PCBP1",
+"refseq_mrna": "NM_006196.4" 
+},
+"EP300": {
+ "gene_symbol": "EP300",
+"refseq_mrna": "NM_001429.4" 
+},
+"BHMT2": {
+ "gene_symbol": "BHMT2",
+"refseq_mrna": "NM_017614.5" 
+},
+"ZMYM3": {
+ "gene_symbol": "ZMYM3",
+"refseq_mrna": "NM_201599.3" 
+},
+"CHIC2": {
+ "gene_symbol": "CHIC2",
+"refseq_mrna": "NM_012110.4" 
+},
+"ELF4": {
+ "gene_symbol": "ELF4",
+"refseq_mrna": "NM_001421.4" 
+},
+"PIM1": {
+ "gene_symbol": "PIM1",
+"refseq_mrna": "NM_002648.4" 
+} 
+},
+"num_tested_genes": 12,
+"sample_type": "Total RNA",
+"analysis_type": "Fusion analysis",
+"variants": [
+ {
+ "gene_symbol": "MALT1",
+"variant_id": "VCV005128642",
+"chromosome": "chr18",
+"hgvsg": "g.58673587G>C",
+"hgvsc": "c.2123G>C",
+"hgvsp": "p.Gly708Ala",
+"transcript_id": "NM_006785.4",
+"exon": null,
+"reference_genome": "GRCh38",
+"zygosity": "heterozygous",
+"interpretation": "Variant of uncertain clinical significance" 
+} 
+],
+"num_variants": 1 
+} 
+}
