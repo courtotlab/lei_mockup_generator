@@ -2,20 +2,20 @@
 set -euo pipefail
 
 OUTDIR=out/
-TEMPLATES=("templates/template1.tex" "templates/template2.tex")
+TEMPLATES=("../templates/fakeHospital1.tex" "../templates/fakeHospital2.tex")
 
 mkdir -p "$OUTDIR"
 echo "Output directory: $OUTDIR"
 # Generate mock data 5 times, outputting JSON files
-for i in $(seq 1 5); do
+for i in $(seq 1 3); do
   DATA="${OUTDIR}mock_data_${i}.json"
   echo "Generating mock data #$i: $DATA"
-  Rscript generate_mock_data.R --amount 10 --outfile "$DATA"
+  Rscript generate_mock_data.R --amount 1 --outfile "$DATA"
 done
 
 # For each JSON file, run interpolate on each template
 echo "Interpolating JSON files with templates..."
-for i in $(seq 1 5); do
+for i in $(seq 1 3); do
   DATA="${OUTDIR}mock_data_${i}.json"
   for TEMPLATE in "${TEMPLATES[@]}"; do
     OUTPREFIX="${OUTDIR}report_${i}_$(basename "${TEMPLATE%.tex}")"

@@ -31,7 +31,7 @@ if (is.na(args$outprefix)) {
 # Read the template
 lines <- readLines(args$template_file)
 text <- paste(lines, collapse = "\n")
-blurb_data <- read_yaml("data/text_pieces.yml")
+blurb_data <- read_yaml("../data/text_pieces.yml")
 
 # Read the json data
 mock_data <- fromJSON(args$json_file)
