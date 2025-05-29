@@ -97,20 +97,29 @@ gen_vcv <- function(amount=1) {
 # Declare external_gene_name as a global variable to avoid binding warnings
 globalVariables(c("external_gene_name"))
 
-find_exon_number <- function(variant_pos, gene_symbol, exons_df, chr_name) {
-  # Filter exons for the gene
-  # Find exon where variant_pos lies between exon start and end
-  exons_gene <- subset(exons_df, external_gene_name == gene_symbol
-                       & chromosome_name == chr_name)
-  exon_match <- exons_gene[
-                           variant_pos >= exons_gene$exon_chrom_start &
-                             variant_pos <= exons_gene$exon_chrom_end, ]
-  if (nrow(exon_match) == 0) {
-    return(NA)  # variant not in any exon
+find_exon_number <- function(chromosome, hgvsg, gene_symbol, exons_df) {
+  # Normalize chromosome name
+  variant_chr <- gsub("^chr", "", chromosome)
+
+  # Extract numeric position from HGVSg (e.g., "g.77510022T>C" → 77510022)
+  variant_pos <- as.numeric(sub("^g\\.(\\d+).*", "\\1", hgvsg))
+
+  # Filter exons for matching gene and chromosome
+  exon_match <- exons_df[
+    exons_df$external_gene_name == gene_symbol &
+      exons_df$chromosome_name == variant_chr &
+      exons_df$exon_chrom_start <= variant_pos &
+      exons_df$exon_chrom_end >= variant_pos,
+  ]
+
+  # Return the exon number (rank), or NA if not found
+  if (nrow(exon_match) > 0) {
+    return(exon_match$rank[1])  # return first match
   } else {
-    return(exon_match$rank)
+    return(NA)
   }
 }
+
 
 
 
@@ -131,7 +140,13 @@ sample_variants <- function(genes) {
     # TODO: Add aapos, fromAA, toAA
     data$transcript_id <- gene_info[data$gene_symbol, "refseq_mrna"]
     # TODO: data$exon
-    data$exon <- find_exon_number(var_data$pos, data$gene_symbol, exons_df)
+    data$exon <- find_exon_number(
+      data$chromosome,
+      data$hgvsg,
+      data$gene_symbol,
+      exons_df
+    )
+
     #make function to query biomart for exon derived from variant position
     data$reference_genome <- "GRCh38"
     data$zygosity <- sample(
