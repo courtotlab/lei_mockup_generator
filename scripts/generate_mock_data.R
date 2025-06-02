@@ -163,11 +163,11 @@ find_exon_number <- function(chromosome, hgvsg, gene_symbol, exons_df) {
       exons_df$exon_chrom_end >= variant_pos,
   ]
 
-  # Return the exon number (rank), or NA if not found
+  # Return the exon number (rank), or a random number if not found
   if (nrow(exon_match) > 0) {
     return(exon_match$rank[1])  # return first match
   } else {
-    return(NA)
+    return(sample(1:20, 1))  # return a random exon number if not found
   }
 }
 

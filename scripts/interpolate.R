@@ -28,13 +28,24 @@ if (is.na(args$outprefix)) {
   args$outprefix <- sub("\\.tex$", "", basename(args$template_file))
 }
 
+
+
 # Read the template
 lines <- readLines(args$template_file)
 text <- paste(lines, collapse = "\n")
 blurb_data <- read_yaml("data/text_pieces.yml")
-
 # Read the json data
 mock_data <- fromJSON(args$json_file)
+
+source("scripts/sharedFunctions.r")
+
+plugin_files <- list.files(path = "scripts", pattern = "^hospital.*\\.r$",
+                           full.names = TRUE)
+PLUGIN_FUNCTIONS <- list()
+for (plugin_file in plugin_files) {
+  source(plugin_file)
+  cat("Loaded plugin:", basename(plugin_file), "\n")
+}
 
 #helper function to extract data labels from template
 extract <- function(text, rx, capture = TRUE) {
@@ -76,291 +87,8 @@ tex_escape <- function(str) {
     e("}")
 }
 
-#capitalize a word ("hello" -> "Hello")
-cap <- function(txt) {
-  substr(txt, 1, 1) <- toupper(substr(txt, 1, 1))
-  txt
-}
-#convert a number to text (2 -> "two")
-num2text <- function(num, one = FALSE) {
-  if (num == 1 && !one) {
-    "a" # says "a" instead of "one"
-  }
-  blurb_data$numbers[[num]]
-}
-#convert an amino acid's code to its full name
-aaname <- function(aa) {
-  blurb_data$residues[[tolower(aa)]]
-}
 
-# generates a summary text blurb for a set of variants
-summary_blurb <- function(variants, suffix = "detected.") {
-  #if there are no variants, we're done
-  if (length(variants) == 0) {
-    return(paste("No variants", suffix))
-  }
-  interpretations <- sapply(variants, `[[`, "interpretation")
-  #rename "pathogenic" to "pathogenic variant", etc
-  interpretations <- sapply(interpretations, \(iname) {
-    #also, convert to lower case
-    iname <- tolower(iname)
-    if (!grepl("variant", iname)) {
-      paste(iname, "variant")
-    } else {
-      iname
-    }
-  })
-  #count how many there are of each type
-  inter_table <- table(interpretations)
-  #generate strings for each type/number (e.g "two pathogenic variants")
-  vstrings <- sapply(names(inter_table), \(iname) {
-    #translate the number to a text string (2 -> "two")
-    numstr <- inter_table[[iname]] |> num2text()
-    #add plural when number is greater 1
-    if (inter_table[[iname]] > 1) {
-      iname <- sub("variant", "variants", iname)
-    }
-    paste(numstr, iname)
-  })
-  #if there's only one type, we're done
-  if (length(vstrings) == 1) {
-    return(cap(paste(vstrings[[1]], suffix)))
-  }
-  #concatenate with commas and "and"
-  paste(
-    paste(vstrings[-length(vstrings)], collapse = ", "),
-    "and", vstrings[[length(vstrings)]], suffix
-  )
-}
 
-long_blurb <- function(variants) {
-  #if there are no variants, we're done
-  if (length(variants) == 0) {
-    return("No variants were detected.")
-  }
-  hgvsps <- sapply(variants, `[[`, "hgvsp")
-  var_data <- hgvsParseR::parseHGVS(hgvsps)
-  intro_sentence <- paste(
-    "The interpretation of these variants is as follows:",
-    summary_blurb(variants, suffix = " "),
-    if (length(variants) == 1) "was" else "were",
-    "detected in the sample."
-  )
-  var_blurbs <- lapply(seq_along(variants), \(i) {
-    variant <- c(variants[[i]], var_data[i, ])
-    if (!is.na(variant$variant) && variant$variant == "Ter") {
-      variant$type <- "stop"
-    }
-    generate_intro <- paste(
-      "{\\bf Variant", i, "of", length(variants),
-      variant$gene_symbol, "(", variant$hgvsc, variant$hgvsp, ")}", "\\newline"
-    )
-
-    location <- paste(
-      "The", variant$hgvsc, "occurs at position", variant$start,
-      "in exon ", variant$exon, "of the", variant$gene_symbol,
-      "within chromosome ", variant$chromosome, ". It "
-    )
-    effect <- switch(variant$type,
-      synonymous = "causes no amino acid change.",
-      stop = paste(
-        "causes an early translation termination at position",
-        variant$start, "."
-      ),
-      substitution = paste(
-        "causes an amino acid substitution, which replaces",
-        aaname(variant$ancestral), "with", aaname(variant$variant), "."
-      )
-    )
-    interpretation_text <- if (grepl("uncertain", variant$interpretation)) {
-      paste(
-        "According to ClinVar, the evidence collected to date is",
-        "insufficient to firmly establish the clinical significance of this",
-        "variant, therefore it is classified as a",
-        tolower(variant$interpretation), "."
-      )
-    } else {
-      paste(
-        "In accordance with existing evidence, this variant is therefore",
-        "classified as a", tolower(variant$interpretation), "variant."
-      )
-    }
-    interp <- tolower(variant$interpretation)
-    clinical_statement <- switch(interp,
-      "variant of uncertain clinical significance" = paste(
-        "The clinical relevance of this variant remains unclear.",
-        "Currently, there is insufficient evidence 
-        to confirm or refute its role in disease."
-      ),
-      "likely pathogenic" = paste(
-        "This variant is considered likely pathogenic.",
-        "It has been associated with deleterious effects on protein function 
-        and may contribute to disease in affected individuals."
-      ),
-      "pathogenic" = paste(
-        "This variant is classified as pathogenic.",
-        "It is strongly associated with disease causation and has been reported
-        in multiple affected individuals and functional studies."
-      ),
-      paste(
-        "This variant has been reported with the interpretation:",
-        variant$interpretation, "."
-      )
-    )
-
-    implication_statement <- if (grepl("uncertain", interp)) {
-      "not currently strongly implicated in specific diseases"
-    } else {
-      "implicated in oncogenesis and other disease processes"
-    }
-
-    # Build the conservation_text block
-    conservation_text <- paste(
-      "ClinVar and other genomic databases report the",
-      variant$gene_symbol, variant$hgvsc,
-      "variant as clinically relevant based on aggregated evidence.",
-      "\n\n", clinical_statement,
-
-      "\n\nThe affected nucleotide lies within a region 
-  that is highly conserved across vertebrate species,",
-      "which suggests functional importance and evolutionary constraint.",
-      "\n\n
-      This variant is", implication_statement,
-      "according to ClinVar records",
-      paste0(" (VCV accession: ", variant$variant_id, ")."),
-
-      "\n\nSupporting studies and case reports can be found 
-  in the scientific literature.",
-      "Relevant PubMed references include:",
-      paste(sample(1e8:1e9, sample(3:8, 1)), collapse = ", "), "."
-)
-    paste(generate_intro, location, effect, interpretation_text,
-          conservation_text, sep = "\n")
-  })
-  paste(
-    intro_sentence, "\n\n",
-    paste0(var_blurbs, collapse = "\n\n")
-  )
-}
-
-long_blurb_hospital2 <- function(variants) {
-  #if there are no variants, we're done
-  if (length(variants) == 0) {
-    return("No variants were detected.")
-  }
-  hgvsps <- sapply(variants, `[[`, "hgvsp")
-  var_data <- hgvsParseR::parseHGVS(hgvsps)
-  intro_sentence <- paste(
-    "\\newline The interpretation of these variants is as follows:",
-    summary_blurb(variants, suffix = " "),
-    if (length(variants) == 1) "was" else "were",
-    "detected in the sample."
-  )
-  var_blurbs <- lapply(seq_along(variants), \(i) {
-    variant <- c(variants[[i]], var_data[i, ])
-    if (!is.na(variant$variant) && variant$variant == "Ter") {
-      variant$type <- "stop"
-    }
-    generate_intro <- paste(
-      "\\vspace{2em}{\\bf \\large Variant", i, "of", length(variants), "}
-      \\newline \\vspace{2em}",
-      "\\begin{tabularx}{\\textwidth}{C C C C} \n",
-      "&&&\\\\",
-      "Gene & Variant & Amino & Zygosity\\\\",
-      variant$gene_symbol, " & ", variant$hgvsc, "&",
-      variant$hgvsp, " & ", variant$zygosity, "\n\\end{tabularx}",
-      "\\vspace{2em}",
-      "{\\bf", variant$interpretation, "}", "\\newline"
-    )
-
-    location <- paste(
-      variant$gene_symbol, variant$hgvsc,
-      variant$hgvsp, "begins at position", variant$start,
-      "in exon ", variant$exon,
-      "within chromosome ", variant$chromosome, ". This mutation has been 
-      identified in ", sample(1:50, 1), "families. ", "It "
-    )
-    effect <- switch(variant$type,
-      synonymous = "causes no amino acid change.",
-      stop = paste(
-        "causes an early translation termination at position",
-        variant$start, "."
-      ),
-      substitution = paste(
-        "causes an amino acid substitution, which replaces",
-        aaname(variant$ancestral), "with", aaname(variant$variant), "."
-      )
-    )
-    interpretation_text <- if (grepl("uncertain", variant$interpretation)) {
-      paste(
-        "According to ClinVar, the evidence collected to date is",
-        "insufficient to firmly establish the clinical significance of this",
-        "variant, therefore it is classified as a",
-        tolower(variant$interpretation), "."
-      )
-    } else {
-      paste(
-        "In accordance with existing evidence, this variant is therefore",
-        "classified as a", tolower(variant$interpretation), "variant."
-      )
-    }
-    interp <- tolower(variant$interpretation)
-    clinical_statement <- switch(interp,
-      "variant of uncertain clinical significance" = paste(
-        "The clinical implications of this variant are not yet fully 
-        understood.","At present, available data is insufficient 
-        to confirm its role in disease."
-      ),
-      "likely pathogenic" = paste(
-        "This variant is classified as likely pathogenic.",
-        "It is believed to negatively impact protein function and may 
-        play a role", "in disease development in affected individuals."
-      ),
-      "pathogenic" = paste(
-        "This variant is deemed pathogenic.",
-        "It has a strong association with disease and has been documented in",
-        "multiple cases, supported by functional evidence."
-      ),
-      paste(
-        "This variant has been reported with the following interpretation:",
-        variant$interpretation, "."
-      )
-    )
-
-    implication_statement <- if (grepl("uncertain", interp)) {
-      "not currently strongly implicated in specific diseases"
-    } else {
-      "implicated in oncogenesis and other disease processes"
-    }
-
-    # Build the conservation_text block
-    conservation_text <- paste(
-      "ClinVar and other genomic databases report the",
-      variant$gene_symbol, variant$hgvsc,
-      "variant as clinically relevant based on aggregated evidence.",
-      "\n\n", clinical_statement,
-
-      "\n\nThe affected nucleotide lies within a region 
-  that is highly conserved across vertebrate species,",
-      "which suggests functional importance and evolutionary constraint.",
-      "\n\n
-      This variant is", implication_statement,
-      "according to ClinVar records",
-      paste0(" (VCV accession: ", variant$variant_id, ")."),
-
-      "\n\nSupporting studies and case reports can be found 
-  in the scientific literature.",
-      "Relevant PubMed references include:",
-      paste(sample(1e8:1e9, sample(3:8, 1)), collapse = ", "), ". \\newpage"
-    )
-    paste(generate_intro, location, effect, interpretation_text,
-          conservation_text, sep = "\n")
-  })
-  paste(
-    intro_sentence, "\n\n",
-    paste0(var_blurbs, collapse = "\n\n")
-  )
-}
 #extract iterator sections
 
 rx_begin_iter <- "\\\\begin\\{dataiter\\}\\{([^}]+)\\}"
@@ -402,15 +130,21 @@ outputs <- lapply(names(mock_data), \(uuid) {
         label <- fields[j, "label"]
         marker <- paste0("\\data{", label, "}")
         if (label == "blurb") {
-          blurb <- long_blurb(dataset$variants)
+          blurb_type <- "default"
+          blurb <- PLUGIN_FUNCTIONS[[blurb_type]](dataset$variants)
           txt <- sub(marker, blurb, txt, fixed = "TRUE")
         } else if (label == "summary_blurb") {
           blurb <- summary_blurb(dataset$variants)
+          txt <- sub(marker, blurb, text, fixed = "TRUE")
+        } else if (grepl("^blurb_hospital", label)) {
+          blurb_type <- sub("^blurb_", "", label)
+          if (!is.null(PLUGIN_FUNCTIONS[[blurb_type]])) {
+            blurb <- PLUGIN_FUNCTIONS[[blurb_type]](dataset$variants)
+          } else {
+            blurb <- paste("No plugin function for", blurb_type, "found.")
+          }
           txt <- sub(marker, blurb, txt, fixed = "TRUE")
-        } else if (label == "blurb2") {
-          blurb <- long_blurb_hospital2(dataset$variants)
-          txt <- sub(marker, blurb, txt, fixed = "TRUE")
-        }else if (!(label %in% names(dataset))) {
+        } else if (!(label %in% names(dataset))) {
           cat("Skipping unsupported label: ", label, "\n")
           txt <- sub(marker, paste0("\\it{Missing} ", label),
                      txt, fixed = TRUE)
