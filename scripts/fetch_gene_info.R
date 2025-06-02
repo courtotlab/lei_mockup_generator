@@ -40,9 +40,6 @@ if (is.null(ensembl_connections) || length(ensembl_connections) == 0) {
 }
 ensembl <- ensembl_connections[[1]]
 
-ensembl <- useEnsembl(biomart = 'genes', dataset = 'hsapiens_gene_ensembl')
-
-
 results <- getBM(
   attributes = c(
     "external_gene_name",
