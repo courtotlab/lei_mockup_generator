@@ -1,0 +1,57 @@
+{
+ "f9fee7c5-03cd-4a13-845a-5332b2577554": {
+ "date_collected": "2022-08-07 15:33:00",
+"date_received": "2022-08-08 21:37:37",
+"date_verified": "2022-08-08 22:45:54",
+"report_type": "Pathology",
+"testing_context": "Clinical",
+"ordering_clinic": "Trillium Health Partners (Mississauga)",
+"testing_laboratory": "Sinai Health System (Toronto)",
+"sequencing_scope": "Whole genome sequencing (WGS)",
+"tested_genes": {
+ "STK19": {
+ "gene_symbol": "STK19",
+"refseq_mrna": "NM_032454.1" 
+},
+"BHMT2": {
+ "gene_symbol": "BHMT2",
+"refseq_mrna": "NM_017614.5" 
+},
+"RBM10": {
+ "gene_symbol": "RBM10",
+"refseq_mrna": "NM_005676.5" 
+},
+"EPHB4": {
+ "gene_symbol": "EPHB4",
+"refseq_mrna": "NM_004444.5" 
+},
+"TTL": {
+ "gene_symbol": "TTL",
+"refseq_mrna": "NM_153712.5" 
+},
+"PRKCD": {
+ "gene_symbol": "PRKCD",
+"refseq_mrna": "NM_006254.4" 
+} 
+},
+"num_tested_genes": 6,
+"sample_type": "Amplified DNA",
+"analysis_type": "Methylation analysis",
+"variants": [
+ {
+ "gene_symbol": "CANT1",
+"variant_id": "VCV005303290",
+"chromosome": "chr17",
+"hgvsg": "g.78991935G>C",
+"hgvsc": "c.220G>C",
+"hgvsp": "p.Ala74Pro",
+"transcript_id": "NM_138793.4",
+"exon": 5,
+"reference_genome": "GRCh38",
+"zygosity": "heterozygous",
+"interpretation": "Variant of uncertain clinical significance" 
+} 
+],
+"num_variants": 1 
+} 
+}

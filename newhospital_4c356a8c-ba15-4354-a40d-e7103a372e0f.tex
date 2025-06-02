@@ -1,0 +1,183 @@
+\documentclass[11pt]{extarticle}
+
+
+\usepackage{tgadventor}
+\renewcommand*\familydefault{\sfdefault} %% Only if the base font of the document is to be sans serif
+\usepackage[T1]{fontenc}
+\usepackage[margin=3.5cm]{geometry}
+\usepackage{array}
+\usepackage{draftwatermark}
+\SetWatermarkText{Mock specimen}
+\SetWatermarkScale{.5}
+
+\setlength{\parindent}{0em}
+\setlength{\parskip}{.5em}
+\setlength{\headheight}{55pt}
+
+\usepackage{tabularx}
+
+
+%Define fake commands for values to be replaced by the pre-processor
+\newcommand{\data}[1]{}
+\newenvironment{dataiter}[1]{}{}
+
+
+\usepackage{fancyhdr}
+\pagestyle{fancy}
+\fancyhf{} 
+
+\fancyhead[L]{\parbox[b]{0.65\textwidth}{%
+  \textbf{\LARGE Ontario Cancer Hospital} \\[0.5em]
+ \large Division of Tumor \\ 
+  Sequencing and \\ 
+  Diagnostics
+}}
+\fancyhead[R]{\parbox[b]{0.3\textwidth}{%
+  \raggedleft
+  123 Main St. West, Toronto, ON, A4B5G9 \\[0.5em]
+  info@och.on.ca \\
+  fax: 416-456-7890\\
+  phone: 437-416-6470
+}}
+
+\fancyfoot[L]{\textbf{MRN: ~~~~~~~~~~~ Date: 2023-12-24 12:35:00}}
+\fancyfoot[R]{\textbf{Page \thepage\ }}
+
+\renewcommand{\footrulewidth}{0.25pt}
+
+\begin{document}
+\hfill
+
+\hrule
+\begin{center}
+{\Huge \bf Draft LABORATORY RESULTS}
+\end{center}
+\hrule
+
+\begin{tabular}{p{9cm} p{6cm}}
+\parbox[t]{9cm}{
+  \textbf{\Large Patient Info:} \\[0.5em]
+  Name: \\
+  DOB: \\
+  Sex: \\
+}
+&
+\parbox[t]{6cm}{
+  \textbf{\Large Patient Information:} \\[0.5em]
+  Physician Name:\\
+  Health Card:\\
+  MRN \#: \\
+  Clinic: Peterborough Regional Health Centre (Peterborough) %Lei struggle area
+}
+\end{tabular}
+\vspace{2em}
+\hrule
+\newcolumntype{C}{>{\centering\arraybackslash}X}
+{\bf
+\begin{tabularx}{\textwidth}{C C C}
+Procedure Date & Accession Date & Report Date \\
+2023-12-24 12:35:00 & 2023-12-25 12:46:26 & 2023-12-26 21:35:43
+\end{tabularx}
+}
+\vspace{1.5em}
+
+{\bf \Large Report Details}
+\\ \\
+Specimen Tested - Amplified DNA \\ \\ %Lei struggle area will incorporate into paragraph so can delete here eventually
+Sequencing Scope - Whole genome sequencing (WGS) \\ \\
+Referral Reason - Clinical\\ \\
+
+{\bf \Huge Table of findings:}
+\vspace{1em}
+\newcolumntype{W}{>{\hsize=0.85\hsize}X} %mid column
+\newcolumntype{Y}{>{\hsize=1.75\hsize}X} % Wider column
+\newcolumntype{Z}{>{\hsize=0.35\hsize}X} % Narrower column
+
+\begin{tabularx}{\textwidth}{Z|Y|X}
+{\bf \large Gene} & {\bf \large Information} & {\bf \large Interpretation} \\
+\hline
+
+PDGFRB & 1 c.3133G>C p.Ala1045Pro heterozygous & Variant of uncertain clinical significance \\ 
+ 
+PCM1 & 8 c.5741T>G p.Leu1914Ter heterozygous & Variant of uncertain clinical significance \\ 
+ 
+%BRCA1 & 11 c.123A>T p.Lys41* Heterozygous & Pathogenic \\  %test compile
+&& \\
+%VHL & 5 c.499c>T p.Arg167Trp heterozygous & Uncertain clinical significance %also test
+\end{tabularx}
+\vspace{3em}
+\newcolumntype{S}{>{\hsize=0.15\hsize}X}
+
+\begin{tabularx}{\textwidth}{S X}
+{\bf \large Summary: } & Two variants of uncertain clinical significance detected.. The details regarding the specific mutations are included below. 
+\end{tabularx}
+
+\newpage
+\vspace{2em}
+{\Huge \bf Variant Interpretation: } 
+\newline
+\newline The interpretation of these variants is as follows: Two variants of uncertain clinical significance   were detected in the sample. 
+
+ \vspace{2em}{\bf \large Variant 1 of 2 }
+      \newline \vspace{2em} \begin{tabularx}{\textwidth}{C C C C} 
+ &&&\\ Gene & Variant & Amino & Zygosity\\ PDGFRB  &  c.3133G>C & p.Ala1045Pro  &  heterozygous 
+\end{tabularx} \vspace{2em} {\bf Variant of uncertain clinical significance } \newline
+PDGFRB c.3133G>C p.Ala1045Pro begins at position 1045 in exon  1 within chromosome  chr5 . This mutation has been 
+      identified in  33 families.  It 
+causes an amino acid substitution, which replaces alanine with proline .
+According to ClinVar, the evidence collected to date is insufficient to firmly establish the clinical significance of this variant, therefore it is classified as a variant of uncertain clinical significance .
+ClinVar and other genomic databases report the PDGFRB c.3133G>C variant as clinically relevant based on aggregated evidence. 
+
+ The clinical implications of this variant are not yet fully 
+        understood. At present, available data is insufficient 
+        to confirm its role in disease. 
+
+The affected nucleotide lies within a region 
+  that is highly conserved across vertebrate species, which suggests functional importance and evolutionary constraint. 
+
+
+      This variant is not currently strongly implicated in specific diseases according to ClinVar records  (VCV accession: VCV003752413). 
+
+Supporting studies and case reports can be found 
+  in the scientific literature. Relevant PubMed references include: 264391241, 408149228, 392324027, 391504230, 131990704, 634818416 . \newpage
+
+\vspace{2em}{\bf \large Variant 2 of 2 }
+      \newline \vspace{2em} \begin{tabularx}{\textwidth}{C C C C} 
+ &&&\\ Gene & Variant & Amino & Zygosity\\ PCM1  &  c.5741T>G & p.Leu1914Ter  &  heterozygous 
+\end{tabularx} \vspace{2em} {\bf Variant of uncertain clinical significance } \newline
+PCM1 c.5741T>G p.Leu1914Ter begins at position 1914 in exon  8 within chromosome  chr8 . This mutation has been 
+      identified in  42 families.  It 
+causes an early translation termination at position 1914 .
+According to ClinVar, the evidence collected to date is insufficient to firmly establish the clinical significance of this variant, therefore it is classified as a variant of uncertain clinical significance .
+ClinVar and other genomic databases report the PCM1 c.5741T>G variant as clinically relevant based on aggregated evidence. 
+
+ The clinical implications of this variant are not yet fully 
+        understood. At present, available data is insufficient 
+        to confirm its role in disease. 
+
+The affected nucleotide lies within a region 
+  that is highly conserved across vertebrate species, which suggests functional importance and evolutionary constraint. 
+
+
+      This variant is not currently strongly implicated in specific diseases according to ClinVar records  (VCV accession: VCV005700711). 
+
+Supporting studies and case reports can be found 
+  in the scientific literature. Relevant PubMed references include: 691412297, 875519342, 461044787, 470172422 . \newpage
+
+
+{\huge \bf \underline{Test Details:}} \newline
+\newline
+{\bf \Large Genes Analyzed: } SS18, CD70, CARD11, SDHB, BCL6, KEAP1, TFPT, RBM15, NCOR2, CREB1, CD79A,  \newline \newline
+{\Large \bf Recommendations \newline}
+A precision oncology approach is advised. These mutations are known oncogenic drivers, linked to constitutive pathway activation. Targeted therapies, including hormone-correcting agents, may be considered, guided by clinical judgment. PI3K inhibitors could be explored in trials for PIK3CA-mutated cases. Germline testing is not indicated, as all mutations are consistent with somatic events. A multidisciplinary tumour board review is recommended to integrate findings into care. Additional testing may be pursued at the physician’s discretion. 
+\newline 
+\newline
+{\Large \bf Methodology \newline}
+Genomic DNA was analyzed using a targeted panel covering all coding exons and adjacent intronic regions. Target enrichment was performed with hybrid capture (Twist Bioscience), followed by Illumina NextSeq sequencing. Reads were aligned to GRCh37 using BWA-MEM, and variants called with GATK. Annotation was performed in VarSeq using population databases, predictive algorithms, and ClinVar. CNVs were assessed with CNVkit and confirmed by MLPA when applicable. Regions with pseudogene interference, such as PMS2, were validated using long-range PCR and Sanger sequencing. Mean read depth exceeded 300x, with a minimum threshold of 50x. Analytical sensitivity is >99\% for SNVs/indels and >95\% for exon-level CNVs. {\bf Only variants classified as pathogenic, likely pathogenic, or variants of uncertain significance (VUS) are reported}, per ACMG/AMP guidelines (PMID: 25741868).
+
+{\Large \bf Limitations \newline}
+This test was developed and validated in a certified clinical laboratory. Limitations include reduced sensitivity in pseudogene regions (e.g., PMS2, CHEK2), and inability to detect certain structural variants (e.g., MSH2 inversions), deep intronic changes, or low-level mosaicism. PMS2 exons 11–15 are not analyzed. Interpretations reflect current knowledge and may be updated as new evidence emerges.
+
+\newpage
+{\huge Report Electronically Verified and Signed by: }
+\end{document}
