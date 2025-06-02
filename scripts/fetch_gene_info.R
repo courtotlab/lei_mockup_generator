@@ -32,7 +32,6 @@ get_connections <- function(){
   return(connections)
 }
 
-ensembls <- get_connections()
 Sys.sleep(5)  # wait a bit before trying again
 ensembl_connections <- tryCatch(get_connections(), error = function(e) NULL)
 
