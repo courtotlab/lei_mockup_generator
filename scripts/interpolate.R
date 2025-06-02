@@ -16,8 +16,8 @@ ap <- add_argument(ap,
 )
 ap <- add_argument(ap,
   "json_file",
-  help = "json data file with the values to 
-  interpolate into the template (.json)"
+  help = paste("json data file with the values to 
+  interpolate into the template (.json)")
 )
 ap <- add_argument(ap,
   "--outprefix",
@@ -174,9 +174,11 @@ long_blurb <- function(variants) {
     )
     interpretation_text <- if (grepl("uncertain", variant$interpretation)) {
       paste(
-        "According to ClinVar, the evidence collected to date is",
-        "insufficient to firmly establish the clinical significance of this",
-        "variant, therefore it is classified as a",
+        "According to ClinVar, 
+        previous submissions by clinical laboratories and researchers 
+        have not established a consensus 
+        regarding the clinical significance of this variant. 
+        As such, it is currently classified as a",
         tolower(variant$interpretation), "."
       )
     } else {
@@ -187,17 +189,17 @@ long_blurb <- function(variants) {
     }
     interp <- tolower(variant$interpretation)
     clinical_statement <- switch(interp,
-      "variant of uncertain clinical significance" = paste(
+      `variant of uncertain clinical significance` = paste(
         "The clinical relevance of this variant remains unclear.",
         "Currently, there is insufficient evidence 
         to confirm or refute its role in disease."
       ),
-      "likely pathogenic" = paste(
+      `likely pathogenic"` = paste(
         "This variant is considered likely pathogenic.",
         "It has been associated with deleterious effects on protein function 
         and may contribute to disease in affected individuals."
       ),
-      "pathogenic" = paste(
+      `pathogenic` = paste(
         "This variant is classified as pathogenic.",
         "It is strongly associated with disease causation and has been reported
         in multiple affected individuals and functional studies."
@@ -233,9 +235,9 @@ long_blurb <- function(variants) {
   in the scientific literature.",
       "Relevant PubMed references include:",
       paste(sample(1e8:1e9, sample(3:8, 1)), collapse = ", "), "."
-)
-    paste(generate_intro, location, effect, interpretation_text,
-          conservation_text, sep = "\n")
+    )
+    paste(generate_intro, location, effect, 
+          conservation_text, "\\bf{", interpretation_text, "}", sep = "\n")
   })
   paste(
     intro_sentence, "\n\n",
