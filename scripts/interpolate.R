@@ -16,8 +16,7 @@ ap <- add_argument(ap,
 )
 ap <- add_argument(ap,
   "json_file",
-  help = "json data file with the values to 
-  interpolate into the template (.json)"
+  help = "json data file with the values to interpolate into the template (.json)"
 )
 ap <- add_argument(ap,
   "--outprefix",
@@ -135,7 +134,7 @@ outputs <- lapply(names(mock_data), \(uuid) {
           txt <- sub(marker, blurb, txt, fixed = "TRUE")
         } else if (label == "summary_blurb") {
           blurb <- summary_blurb(dataset$variants)
-          txt <- sub(marker, blurb, text, fixed = "TRUE")
+          txt <- sub(marker, blurb, txt, fixed = "TRUE")
         } else if (grepl("^blurb_hospital", label)) {
           blurb_type <- sub("^blurb_", "", label)
           if (!is.null(PLUGIN_FUNCTIONS[[blurb_type]])) {

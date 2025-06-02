@@ -32,7 +32,6 @@ get_connections <- function(){
   return(connections)
 }
 
-ensembls <- get_connections()
 Sys.sleep(5)  # wait a bit before trying again
 ensembl_connections <- tryCatch(get_connections(), error = function(e) NULL)
 
@@ -40,9 +39,6 @@ if (is.null(ensembl_connections) || length(ensembl_connections) == 0) {
   stop("All Ensembl mirror connections failed. Try again later.")
 }
 ensembl <- ensembl_connections[[1]]
-
-ensembl <- useEnsembl(biomart = 'genes', dataset = 'hsapiens_gene_ensembl')
-
 
 results <- getBM(
   attributes = c(
