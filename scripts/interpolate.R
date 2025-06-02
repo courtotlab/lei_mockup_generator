@@ -16,8 +16,7 @@ ap <- add_argument(ap,
 )
 ap <- add_argument(ap,
   "json_file",
-  help = "json data file with the values to 
-  interpolate into the template (.json)"
+  help = "json data file with the values to interpolate into the template (.json)"
 )
 ap <- add_argument(ap,
   "--outprefix",
