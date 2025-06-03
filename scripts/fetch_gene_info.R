@@ -32,7 +32,6 @@ get_connections <- function(){
   return(connections)
 }
 
-Sys.sleep(5)  # wait a bit before trying again
 ensembl_connections <- tryCatch(get_connections(), error = function(e) NULL)
 
 if (is.null(ensembl_connections) || length(ensembl_connections) == 0) {
@@ -47,26 +46,14 @@ results <- getBM(
     "transcript_is_canonical",
     "coding",
     "chromosome_name",
-    "start_position"
+    "start_position", 
+    "rank"
   ),
   filters = "external_gene_name",
   values = gene_table$genes,
   mart = ensembl
 )
-exons <- getBM(
-  attributes = c(
-    "ensembl_gene_id",
-    "external_gene_name",
-    "exon_chrom_start",
-    "exon_chrom_end",
-    "rank", # rank or exon number within the transcript
-    "ensembl_transcript_id", 
-    "chromosome_name"
-  ),
-  filters = "external_gene_name",
-  values = gene_table$genes,
-  mart = ensembl
-)
+
 
 #filter out non-canonical transcripts and empty values
 results_filtered <- results[which(
@@ -78,16 +65,12 @@ results_filtered <- results[which(
 results_filtered <- results_filtered[
   !duplicated(results_filtered$external_gene_name),
 ]
-exons_filtered <- exons[which(
-  !is.na(exons$exon_chrom_start) &
-    !is.na(exons$exon_chrom_end) &
-    !is.na(exons$rank)
-), ]
+
 #re-order table columns
 results_filtered <- results_filtered[, c(
   "external_gene_name", "refseq_mrna",
   "chromosome_name", "start_position",
-  "coding"
+  "coding", "rank" #rank = exon numbers 
 )]
 
 # Check transcript IDs against entrez e-utils to get version code 
@@ -127,5 +110,7 @@ results_final$refseq_mrna <- do.call(c, refseq_accessions)
 write.csv(results_final, "data/gene_info.csv", row.names = FALSE)
 write.csv(exons_filtered, "data/exon_info.csv", row.names = FALSE)
 paste("Gene info, exon info, saved to 
-data/gene_info.csv, data/exon_info.csv",
+data/gene_info.csv",
       sep = "\n") |> cat()
+
+#The generated csv file is short 43 genes, which were added in a new commit
