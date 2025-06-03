@@ -108,7 +108,7 @@ results_final$chromosome_name <-
 results_final$refseq_mrna <- do.call(c, refseq_accessions)
 # write result to file
 write.csv(results_final, "data/gene_info.csv", row.names = FALSE)
-write.csv(exons_filtered, "data/exon_info.csv", row.names = FALSE)
+#write.csv(exons_filtered, "data/exon_info.csv", row.names = FALSE)
 paste("Gene info, exon info, saved to 
 data/gene_info.csv",
       sep = "\n") |> cat()
