@@ -29,11 +29,21 @@ long_blurb_hospital2 <- function(variants) {
     )
 
     location <- paste(
-      variant$gene_symbol, variant$hgvsc,
-      variant$hgvsp, "begins at position", variant$start,
-      "in exon ", variant$exon,
-      "within chromosome ", variant$chromosome, ". This mutation has been 
-      identified in ", sample(1:50, 1), "families. ", "It "
+      "The", variant$hgvsg, "variant occurs in chromosome", variant$chromosome,
+      ", within the", variant$gene_symbol, "gene, and it causes", variant$hgvsg,
+      "change at position", variant$start, "in exon", variant$exon, ", forming",
+      variant$hgvsp, ". This mutation has been identified in",
+      sample(30:50, 1), "families. It has a population frequency of",
+      formatC(variant$mafaf, format = "e", digits = 2),
+      paste0("(", variant$mafac, " alleles in ",
+             variant$mafan, " total alleles tested),"),
+      "indicating it is a", 
+      if (variant$mafaf < 0.0001) "very rare"
+      else if (variant$mafaf < 0.001) "rare"
+      else if (variant$mafaf < 0.01)
+        "uncommon"
+      else "relatively common",
+      "variant in the general population."
     )
     effect <- switch(variant$type,
       synonymous = "causes no amino acid change.",
@@ -63,7 +73,7 @@ long_blurb_hospital2 <- function(variants) {
     clinical_statement <- switch(interp,
       "variant of uncertain clinical significance" = paste(
         "The clinical implications of this variant are not yet fully 
-        understood.","At present, available data is insufficient 
+        understood.", "At present, available data is insufficient 
         to confirm its role in disease."
       ),
       "likely pathogenic" = paste(
@@ -108,8 +118,8 @@ long_blurb_hospital2 <- function(variants) {
       "Relevant PubMed references include:",
       paste(sample(1e8:1e9, sample(3:8, 1)), collapse = ", "), ". \\newpage"
     )
-    paste(generate_intro, location, effect, interpretation_text,
-          conservation_text, sep = "\n")
+    paste(generate_intro, location, effect,
+          conservation_text, interpretation_text, sep = "\n")
   })
   paste(
     intro_sentence, "\n\n",

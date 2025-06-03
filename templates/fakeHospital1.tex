@@ -53,7 +53,7 @@
 
 
 \begin{center}
-{\Huge \bf LABORATORY RESULTS}
+{\Huge \bf CLINICAL LABORATORY RESULTS}
 \end{center}
 \noindent Report electronically signed by:
 \noindent\hrulefill
@@ -71,7 +71,7 @@
   Sex: \\
   Health Card: \\
   Medical Record \#: \\
-  Sample tested: \\
+  Sample tested: \data{sample_type} \data{analysis_type}
   Referral Reason: \\
   Referring Physician:
 }
@@ -109,7 +109,7 @@
 
 \vspace{3em}
 
-{\bf \large Genes Analyzed: } \begin{dataiter}{tested_genes}\data{gene_symbol}, \end{dataiter}
+{\bf \large Genes Analyzed: {\tiny \data{num_tested_genes} total}} \begin{dataiter}{tested_genes}\data{gene_symbol}, \end{dataiter}
 \newpage
 
 {\huge \bf \underline{Test Details:}} \newline

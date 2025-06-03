@@ -190,6 +190,7 @@ sample_variants <- function(genes) {
     data <- c(data, hgvs[, 1:3])
     # TODO: Add aapos, fromAA, toAA
     data$transcript_id <- gene_info[data$gene_symbol, "refseq_mrna"]
+
     # TODO: data$exon
     data$exon <- find_exon_number(
       data$chromosome,
@@ -199,7 +200,6 @@ sample_variants <- function(genes) {
     )
 
     #make function to query biomart for exon derived from variant position
-    data$reference_genome <- "GRCh38"
     data$zygosity <- sample(
       field_values$zygosity, 1,
       prob = c(.8, .2)
@@ -208,7 +208,10 @@ sample_variants <- function(genes) {
       field_values$interpretation, 1,
       prob = c(.6, .3, .1)
     )
-    data$maf <- gen_maf(1)[1, , drop = TRUE]
+    maf <- gen_maf(1)[1, , drop = TRUE]
+    data$mafac <- maf$ac
+    data$mafan <- maf$an
+    data$mafaf <- maf$af
     data
   }, simplify = FALSE)
 }
@@ -259,6 +262,7 @@ generate_mockup <- function() {
   data$analysis_type <- sample_field("analysis_types")
   data$variants <- sample_variants(names(data$tested_genes))
   data$num_variants <- length(data$variants)
+  data$reference_genome <- sample_field("reference_genomes")
   data
 }
 
