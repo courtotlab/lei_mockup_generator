@@ -195,11 +195,16 @@ sample_variants <- function(genes) {
     # TODO: Add aapos, fromAA, toAA
     data$transcript_id <- gene_info[data$gene_symbol, "refseq_mrna"]
 
-    # TODO: data$exon
-    if (is.na(data$exon)) {
-      data$exon <- sample(1:20, 1)
+    # Handle exon assignment with safe checking
+    if (is.null(data$exon) || length(data$exon) == 0 || is.na(data$exon)) {
+      # Try to get exon from gene_info, with fallback to random number
+      rank_data <- gene_info[data$gene_symbol, "rank"]
+      if (!is.na(rank_data) && rank_data != "") {
+        data$exon <- sample(strsplit(rank_data, ";")[[1]], 1)
+      } else {
+        data$exon <- sample(1:20, 1)
+      }
     }
-    data$exon <- sample(strsplit(gene_info[data$gene_symbol, "rank"], ";")[[1]], 1)
 
     data$zygosity <- sample(
       field_values$zygosity, 1,
@@ -264,7 +269,7 @@ generate_mockup <- function() {
   data$variants <- sample_variants(names(data$tested_genes))
   data$num_variants <- length(data$variants)
   data$reference_genome <- sample(
-    field_values$reference_genomes, prob = c(0.95, 0.01, 0.01, 0.01, 0.01)
+    field_values$reference_genomes, prob = c(0.95, 0.01, 0.01, 0.01, 0.01, 0.01)
   )
   data
 }
