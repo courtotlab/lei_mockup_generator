@@ -126,6 +126,8 @@ gen_hgvs <- function(var_data, gene) {
     })
   })
   b <- new.hgvs.builder.g()
+  # Edit this function to calculate the correct genomic position 
+  # with exon structure taken into account
   hgvsg <- sapply(seq_len(nrow(var_data)), \(i) {
     with(var_data[i, ], {
       b$substitution(gene_info[gene, "start_position"] + pos - 1, from, to)
@@ -156,11 +158,13 @@ find_exon_number <- function(chromosome, hgvsg, gene_symbol, exons_df) {
   variant_pos <- as.numeric(sub("^g\\.(\\d+).*", "\\1", hgvsg))
 
   # Filter exons for matching gene and chromosome
-  exon_match <- exons_df[
+  exon_match1 <- exons_df[
     exons_df$external_gene_name == gene_symbol &
-      exons_df$chromosome_name == variant_chr &
-      exons_df$exon_chrom_start <= variant_pos &
-      exons_df$exon_chrom_end >= variant_pos,
+      exons_df$chromosome_name == variant_chr
+  ]
+  exon_match <- exon_match1[
+    exons_df$exon_chrom_start <= variant_pos &
+      exons_df$exon_chrom_end >= variant_pos, drop = TRUE
   ]
 
   # Return the exon number (rank), or a random number if not found
@@ -192,14 +196,11 @@ sample_variants <- function(genes) {
     data$transcript_id <- gene_info[data$gene_symbol, "refseq_mrna"]
 
     # TODO: data$exon
-    data$exon <- find_exon_number(
-      data$chromosome,
-      data$hgvsg,
-      data$gene_symbol,
-      exons_df
-    )
+    if (is.na(data$exon)) {
+      data$exon <- sample(1:20, 1)
+    }
+    data$exon <- sample(strsplit(gene_info[data$gene_symbol, "rank"], ";")[[1]], 1)
 
-    #make function to query biomart for exon derived from variant position
     data$zygosity <- sample(
       field_values$zygosity, 1,
       prob = c(.8, .2)
@@ -262,7 +263,9 @@ generate_mockup <- function() {
   data$analysis_type <- sample_field("analysis_types")
   data$variants <- sample_variants(names(data$tested_genes))
   data$num_variants <- length(data$variants)
-  data$reference_genome <- sample_field("reference_genomes")
+  data$reference_genome <- sample(
+    field_values$reference_genomes, prob = c(0.95, 0.01, 0.01, 0.01, 0.01)
+  )
   data
 }
 
