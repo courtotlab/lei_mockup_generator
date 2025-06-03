@@ -46,7 +46,7 @@ results <- getBM(
     "transcript_is_canonical",
     "coding",
     "chromosome_name",
-    "start_position", 
+    "start_position",
     "rank"
   ),
   filters = "external_gene_name",

@@ -1,4 +1,4 @@
-long_blurb_hospital2 <- function(variants) {
+long_blurb <- function(variants) {
   #if there are no variants, we're done
   if (length(variants) == 0) {
     return("No variants were detected.")
@@ -130,4 +130,4 @@ long_blurb_hospital2 <- function(variants) {
 if(!exists("PLUGIN_FUNCTIONS")) {
   PLUGIN_FUNCTIONS <- list()
 }
-PLUGIN_FUNCTIONS$hospital2 <- long_blurb_hospital2
+PLUGIN_FUNCTIONS$long_blurb <- long_blurb
