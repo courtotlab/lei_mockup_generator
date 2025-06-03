@@ -30,9 +30,10 @@ long_blurb <- function(variants) {
 
     location <- paste(
       "The", variant$hgvsg, "variant occurs in chromosome", variant$chromosome,
-      ", within the", variant$gene_symbol, "gene, and it causes", variant$hgvsg,
-      "change at position", variant$start, "in exon", variant$exon, ", forming",
-      variant$hgvsp, ". This mutation has been identified in",
+      ", within the", variant$gene_symbol, "gene, and it causes", variant$hgvsc,
+      "change at position", variant$start, "in exon", variant$exon, 
+      ", causing the mutation", variant$hgvsp, 
+      ". This mutation has been identified in",
       sample(30:50, 1), "families. It has a population frequency of",
       formatC(variant$mafaf, format = "e", digits = 2),
       paste0("(", variant$mafac, " alleles in ",
@@ -43,7 +44,7 @@ long_blurb <- function(variants) {
       else if (variant$mafaf < 0.01)
         "uncommon"
       else "relatively common",
-      "variant in the general population."
+      "variant in the general population. It "
     )
     effect <- switch(variant$type,
       synonymous = "causes no amino acid change.",

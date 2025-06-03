@@ -50,7 +50,7 @@
 
 \hrule
 \begin{center}
-{\Huge \bf Draft {\uppercase \data{report_type} LABORATORY RESULTS}}
+{\Huge \bf Draft {\uppercase{\data{report_type}} LABORATORY RESULTS}}
 \end{center}
 \hrule
 
@@ -83,8 +83,8 @@ Procedure Date & Accession Date & Report Date \\
 
 {\bf \Large Report Details}
 \\ \\
-Genome Reference - \data{reference_genome}
-Sequencing Range - \data{sequencing_scope}, \data{analysis_type}\\ \\
+Genome Reference - \data{reference_genome} \\ \\
+Sequencing information - \data{sequencing_scope}, \data{analysis_type}\\ \\
 Referral Reason - \data{testing_context}\\ \\
 Analysis Location - \data{testing_laboratory}
 
@@ -116,15 +116,15 @@ Analysis Location - \data{testing_laboratory}
 \vspace{2em}
 {\Huge \bf Variant Interpretation: } 
 \newline
-\data{blurb_hospital2}
+\data{blurb}
 
 
 {\huge \bf \underline{Test Details:}} \newline
 \newline
-{\bf \Large Genes Analyzed: } \begin{dataiter}{tested_genes}\data{gene_symbol}, total. \end{dataiter} 
+{\bf \Large Genes Analyzed: } \begin{dataiter}{tested_genes}\data{gene_symbol}. \end{dataiter} 
 \data{num_tested_genes} total genes tested. 
 
-{\bf \large mRNA ref sequences tested NM_...:}
+{\bf \large mRNA ref sequences tested NM\_:}
 \begin{dataiter}{tested_genes}\data{refseq_mrna} \end{dataiter}\newline \newline
 
 {\Large \bf Recommendations \newline}

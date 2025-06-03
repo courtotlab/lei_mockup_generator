@@ -28,7 +28,6 @@ mkdir -p "out/"
 OUTDIR="out/"
 mkdir -p "$OUTDIR"
 AMOUNT=1
-TEMPLATE="${1:-templates/fakeHospital1.tex}"
 while (( "$#" )); do
   case "$1" in
     -h|--help)
@@ -69,6 +68,8 @@ while (( "$#" )); do
   esac
 done
 #reset command arguments as only positional parameters
+TEMPLATE="${1:-templates/fakeHospital2.tex}"
+
 eval set -- "$PARAMS"
 
 echo "Output directory: $OUTDIR"
