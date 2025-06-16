@@ -1,7 +1,6 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-
 #helper function to print usage information
 usage () {
   cat << EOF
@@ -24,7 +23,6 @@ EOF
 
 #Parse Arguments
 PARAMS=""
-# mkdir -p "out/"
 OUTDIR="out/"
 AMOUNT=1
 while (( "$#" )); do
@@ -70,6 +68,11 @@ done
 eval set -- "$PARAMS"
 #Template is the first positional parameter. If not provided, use a default template
 TEMPLATE="${1:-templates/fakeHospital2.tex}"
+# Check if the template file exists
+if [[ ! -f "$TEMPLATE" ]]; then
+  echo "Template file not found: $TEMPLATE"
+  exit 1
+fi
 
 echo "Output directory: $OUTDIR"
 mkdir -p "$OUTDIR"
