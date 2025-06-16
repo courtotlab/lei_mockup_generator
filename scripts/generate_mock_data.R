@@ -268,8 +268,12 @@ generate_mockup <- function() {
   data$analysis_type <- sample_field("analysis_types")
   data$variants <- sample_variants(names(data$tested_genes))
   data$num_variants <- length(data$variants)
+  rgs <- field_values$reference_genomes
+  # Assign multinomial probabilites based on number of entries
+  rg_probs <- rep(0.01, length(rgs))
+  rg_probs[which(rgs == "GRCh38")] <- 1 - 0.01 * (length(rgs) - 1)
   data$reference_genome <- sample(
-    field_values$reference_genomes, prob = c(0.95, 0.01, 0.01, 0.01, 0.01, 0.01)
+    field_values$reference_genomes, prob = rg_probs
   )
   data
 }
