@@ -126,7 +126,7 @@ gen_hgvs <- function(var_data, gene) {
     })
   })
   b <- new.hgvs.builder.g()
-  # Edit this function to calculate the correct genomic position 
+  # FIXME: Edit this function to calculate the correct genomic position 
   # with exon structure taken into account
   hgvsg <- sapply(seq_len(nrow(var_data)), \(i) {
     with(var_data[i, ], {

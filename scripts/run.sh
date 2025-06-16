@@ -24,9 +24,8 @@ EOF
 
 #Parse Arguments
 PARAMS=""
-mkdir -p "out/"
+# mkdir -p "out/"
 OUTDIR="out/"
-mkdir -p "$OUTDIR"
 AMOUNT=1
 while (( "$#" )); do
   case "$1" in
@@ -68,23 +67,25 @@ while (( "$#" )); do
   esac
 done
 #reset command arguments as only positional parameters
+eval set -- "$PARAMS"
+#Template is the first positional parameter. If not provided, use a default template
 TEMPLATE="${1:-templates/fakeHospital2.tex}"
 
-eval set -- "$PARAMS"
-
 echo "Output directory: $OUTDIR"
+mkdir -p "$OUTDIR"
 DATA="$OUTDIR/mock_data.json"
 
 # Generate mock data using the AMOUNT variable
 echo "Generating mock data files..."
 Rscript scripts/generate_mock_data.R --amount "$AMOUNT" --outfile "$DATA"
 
-# For each JSON file, run interpolate on each template
-echo "Interpolating JSON files with templates..."
+# Run interpolate with the given template and generated data
+echo "Interpolating JSON files with template..."
 Rscript scripts/interpolate.R "$TEMPLATE" "$DATA" --outprefix "$OUTDIR/report_"
-cd "$OUTDIR"
+
 # Compile all generated .tex files into PDFs and clean up
 echo "Compiling LaTeX files into PDFs..."
+cd "$OUTDIR"
 for TEXFILE in report_*.tex; do
   echo "Compiling $TEXFILE"
   pdflatex -halt-on-error -interaction batchmode "$TEXFILE" && \
