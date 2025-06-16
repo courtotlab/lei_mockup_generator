@@ -16,7 +16,10 @@ ap <- add_argument(ap,
 )
 ap <- add_argument(ap,
   "json_file",
-  help = "json data file with the values to interpolate into the template (.json)"
+  help = paste(
+    "json data file with the values to",
+    "interpolate into the template (.json)"
+  )
 )
 ap <- add_argument(ap,
   "--outprefix",
@@ -27,42 +30,107 @@ if (is.na(args$outprefix)) {
   args$outprefix <- sub("\\.tex$", "", basename(args$template_file))
 }
 
-
-
 # Read the template
 lines <- readLines(args$template_file)
 text <- paste(lines, collapse = "\n")
+
+# Load the blurb generation text pieces
 blurb_data <- read_yaml("data/text_pieces.yml")
+
 # Read the json data
 mock_data <- fromJSON(args$json_file)
 
-source("templates/sharedFunctions.r")
+#check that the template file exists and is a valid tex file
+if (!file.exists(args$template_file)) {
+  stop("Template file does not exist: ", args$template_file)
+}
+if (!grepl("\\.tex$", args$template_file)) {
+  stop("Template file must be a .tex file: ", args$template_file)
+}
 
-# Determine which plugin to load based on template filename
-template_basename <- basename(args$template_file)
-template_name <- sub("\\.tex$", "", template_basename)
-
-# Map template names to their corresponding plugin files
-template_to_plugin <- list(
-  "fakeHospital1" = "templates/hospital1.r",
-  "fakeHospital2" = "templates/hospital2.r"
-)
-
-
-# Load the specific plugin for this template if it exists
-if (template_name %in% names(template_to_plugin)) {
-  plugin_file <- template_to_plugin[[template_name]]
-  if (file.exists(plugin_file)) {
-    source(plugin_file)
-    cat("Loaded plugin for template:", template_name, "from", basename(plugin_file), "\n")
-  } else {
-    cat("Warning: Plugin file not found:", plugin_file, "\n")
-  }
+#derive plugin file from template name
+plugin_file <- sub(".tex", "_plugin.R", args$template_file, fixed = TRUE)
+if (!file.exists(plugin_file)) {
+  warning("The selected template does not have a corresponding plugin file: ",
+       plugin_file)
 } else {
-  cat("No specific plugin found for template:", template_name, "- using default functions only\n")
+  #source the plugin file
+  source(plugin_file)
+  if (!exists("long_blurb") || !is.function(long_blurb)) {
+    stop(
+      "The plugin file ", plugin_file,
+      " does not define a long_blurb function!"
+    )
+  }
+}
+
+####################
+# HELPER FUNCTIONS #
+####################
+
+#capitalize a word ("hello" -> "Hello")
+cap <- function(txt) {
+  substr(txt, 1, 1) <- toupper(substr(txt, 1, 1))
+  txt
+}
+#convert a number to text (2 -> "two")
+num2text <- function(num, one = FALSE) {
+  if (num == 1 && !one) {
+    return("a") # says "a" instead of "one"
+  }
+  blurb_data$numbers[[num]]
+}
+#convert an amino acid's code to its full name
+aaname <- function(aa) {
+  blurb_data$residues[[tolower(aa)]]
+}
+
+# generates a summary text blurb for a set of variants
+summary_blurb <- function(variants, suffix = "detected.") {
+  #if there are no variants, we're done
+  if (length(variants) == 0) {
+    return(paste("No variants", suffix))
+  }
+  interpretations <- sapply(variants, `[[`, "interpretation")
+  #rename "pathogenic" to "pathogenic variant", etc
+  interpretations <- sapply(interpretations, \(iname) {
+    #also, convert to lower case
+    iname <- tolower(iname)
+    if (!grepl("variant", iname)) {
+      paste(iname, "variant")
+    } else {
+      iname
+    }
+  })
+  #count how many there are of each type
+  inter_table <- table(interpretations)
+  #generate strings for each type/number (e.g "two pathogenic variants")
+  vstrings <- sapply(names(inter_table), \(iname) {
+    #translate the number to a text string (2 -> "two")
+    numstr <- inter_table[[iname]] |> num2text()
+    #add plural when number is greater 1
+    if (inter_table[[iname]] > 1) {
+      iname <- sub("variant", "variants", iname)
+    }
+    paste(numstr, iname)
+  })
+  #if there's only one type, we're done
+  if (length(vstrings) == 1) {
+    return(cap(paste(vstrings[[1]], suffix)))
+  }
+  #concatenate with commas and "and"
+  paste(
+    paste(vstrings[-length(vstrings)], collapse = ", "),
+    "and", vstrings[[length(vstrings)]], suffix
+  )
 }
 
 #helper function to extract data labels from template
+# parameters:
+# - text: the template text
+# - rx: the regular expression to match
+# - capture: whether to capture the label names (default TRUE)
+# returns: a data frame with label names, start and end positions
 extract <- function(text, rx, capture = TRUE) {
   matches <- gregexpr(rx, text, perl = TRUE)
   pos <- matches[[1]]
@@ -102,7 +170,9 @@ tex_escape <- function(str) {
     e("}")
 }
 
-
+##############
+# MAIN LOGIC #
+##############
 
 #extract iterator sections
 
@@ -131,7 +201,6 @@ rx_field <- "\\\\data\\{([^}]+)\\}"
 section_fields <- lapply(text_sections, \(txt) extract(txt, rx_field))
 
 #iterate over datasets
-# for (uuid in names(mock_data)) {
 outputs <- lapply(names(mock_data), \(uuid) {
   dataset <- mock_data[[uuid]]
   #perform interpolations
@@ -149,6 +218,7 @@ outputs <- lapply(names(mock_data), \(uuid) {
           if (exists("long_blurb") && is.function(long_blurb)) {
             blurb <- long_blurb(dataset$variants)
           } else {
+            warning("Missing blurb function from plugin for this template")
             blurb <- paste("No explanation is available, please contact lab.",
                            "This is a placeholder for the blurb.")
           }
@@ -158,7 +228,7 @@ outputs <- lapply(names(mock_data), \(uuid) {
           txt <- sub(marker, blurb, txt, fixed = "TRUE")
         } else if (!(label %in% names(dataset))) {
           cat("Skipping unsupported label: ", label, "\n")
-          txt <- sub(marker, paste0("\\it{Missing} ", label),
+          txt <- sub(marker, paste0("{\\it Missing data} ", label),
                      txt, fixed = TRUE)
         } else {
           value <- tex_escape(dataset[[label]])
