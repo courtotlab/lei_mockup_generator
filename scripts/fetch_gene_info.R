@@ -1,16 +1,44 @@
-#!/usr/bin/Rscript
 
 library(yaml)
 library(biomaRt)
 library(httr)
 library(RJSONIO)
-
+options(timeout=180)
 #get gene list from field values
 gene_table <- yaml.load_file("data/field_values.yml")
 
 #query biomart for genes
-ensembl <- useMart("ensembl")
-human_ds <- useDataset("hsapiens_gene_ensembl", mart = ensembl)
+
+
+get_connections <- function(){
+  mirrors <- c(
+    "https://useast.ensembl.org",
+    "https://www.ensembl.org",
+    "https://uswest.ensembl.org",
+    "https://asia.ensembl.org"
+  )
+  connections <- lapply(mirrors, function(mirror) {
+    tryCatch({
+      useMart("ensembl", dataset = "hsapiens_gene_ensembl", host = mirror)
+    }, error = function(e) {
+      message(paste("Failed to connect to", mirror, ":", e$message))
+      NULL
+    })
+  })
+  connections <- Filter(Negate(is.null), connections)
+  if (length(connections) == 0) {
+    stop("No working connections to Ensembl found.")
+  }
+  return(connections)
+}
+
+ensembl_connections <- tryCatch(get_connections(), error = function(e) NULL)
+
+if (is.null(ensembl_connections) || length(ensembl_connections) == 0) {
+  stop("All Ensembl mirror connections failed. Try again later.")
+}
+ensembl <- ensembl_connections[[1]]
+
 results <- getBM(
   attributes = c(
     "external_gene_name",
@@ -18,12 +46,15 @@ results <- getBM(
     "transcript_is_canonical",
     "coding",
     "chromosome_name",
-    "start_position"
+    "start_position",
+    "rank"
   ),
   filters = "external_gene_name",
   values = gene_table$genes,
-  mart = human_ds
+  mart = ensembl
 )
+
+
 #filter out non-canonical transcripts and empty values
 results_filtered <- results[which(
   results$transcript_is_canonical == 1 &
@@ -34,11 +65,12 @@ results_filtered <- results[which(
 results_filtered <- results_filtered[
   !duplicated(results_filtered$external_gene_name),
 ]
+
 #re-order table columns
 results_filtered <- results_filtered[, c(
   "external_gene_name", "refseq_mrna",
   "chromosome_name", "start_position",
-  "coding"
+  "coding", "rank" #rank = exon numbers 
 )]
 
 # Check transcript IDs against entrez e-utils to get version code 
@@ -74,6 +106,11 @@ results_final <- results_filtered
 results_final$chromosome_name <- 
   gsub("^HSCHR|_.+$", "", results_filtered$chromosome_name)
 results_final$refseq_mrna <- do.call(c, refseq_accessions)
-
 # write result to file
 write.csv(results_final, "data/gene_info.csv", row.names = FALSE)
+#write.csv(exons_filtered, "data/exon_info.csv", row.names = FALSE)
+paste("Gene info, exon info, saved to 
+data/gene_info.csv",
+      sep = "\n") |> cat()
+
+#The generated csv file is short 43 genes, which were added in a new commit

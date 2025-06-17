@@ -61,6 +61,13 @@ interpretation:
 zygosity:
   - heterozygous
   - homozygous
+reference_genomes:
+  - GRCh38
+  - GRCh37
+  - NCBI Build 36.1
+  - NCBI Build 35
+  - NCBI Build 34
+  - T2T-CHM13
 genes:
   - ABCB1
   - ABCB11

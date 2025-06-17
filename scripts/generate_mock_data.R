@@ -5,7 +5,6 @@ library(yaml)
 library(hgvsParseR)
 library(RJSONIO)
 library(argparser)
-
 #parse command line arguments
 ap <- arg_parser("generate a mock dataset in JSON format", name = "mockups.R")
 ap <- add_argument(ap,
@@ -25,6 +24,7 @@ out_file <- args$outfile
 #Load source data
 field_values <- yaml.load_file("data/field_values.yml")
 gene_info <- read.csv("data/gene_info.csv", row.names = 1)
+exons_df <- read.csv("data/exon_info.csv", stringsAsFactors = FALSE)
 
 # Helper function to sample from fields
 sample_field <- function(name, num = 1) sample(field_values[[name]], num)
@@ -126,10 +126,11 @@ gen_hgvs <- function(var_data, gene) {
     })
   })
   b <- new.hgvs.builder.g()
-  cds_start <- gene_info[gene,"start_position"]
+  # FIXME: Edit this function to calculate the correct genomic position 
+  # with exon structure taken into account
   hgvsg <- sapply(seq_len(nrow(var_data)), \(i) {
     with(var_data[i, ], {
-      b$substitution(cds_start + pos - 1, from, to)
+      b$substitution(gene_info[gene, "start_position"] + pos - 1, from, to)
     })
   })
   cds_seq <- gene_info[gene, "coding"]
@@ -146,9 +147,41 @@ gen_vcv <- function(amount=1) {
   })
 }
 
+# Declare external_gene_name as a global variable to avoid binding warnings
+globalVariables(c("external_gene_name"))
+
+find_exon_number <- function(chromosome, hgvsg, gene_symbol, exons_df) {
+  # Normalize chromosome name
+  variant_chr <- gsub("^chr", "", chromosome)
+
+  # Extract numeric position from HGVSg (e.g., "g.77510022T>C" → 77510022)
+  variant_pos <- as.numeric(sub("^g\\.(\\d+).*", "\\1", hgvsg))
+
+  # Filter exons for matching gene and chromosome
+  exon_match1 <- exons_df[
+    exons_df$external_gene_name == gene_symbol &
+      exons_df$chromosome_name == variant_chr
+  ]
+  exon_match <- exon_match1[
+    exons_df$exon_chrom_start <= variant_pos &
+      exons_df$exon_chrom_end >= variant_pos, drop = TRUE
+  ]
+
+  # Return the exon number (rank), or a random number if not found
+  if (nrow(exon_match) > 0) {
+    return(exon_match$rank[1])  # return first match
+  } else {
+    return(sample(1:20, 1))  # return a random exon number if not found
+  }
+}
+
+
+
+
+
 #Sample random variants
 sample_variants <- function(genes) {
-  num_variants <- max(1,rpois(1, 1))
+  num_variants <- max(1, rpois(1, 1))
   replicate(num_variants, {
     data <- list()
     data$gene_symbol <- sample(genes, 1L)
@@ -161,8 +194,18 @@ sample_variants <- function(genes) {
     data <- c(data, hgvs[, 1:3])
     # TODO: Add aapos, fromAA, toAA
     data$transcript_id <- gene_info[data$gene_symbol, "refseq_mrna"]
-    # TODO: data$exon
-    data$reference_genome <- "GRCh38"
+
+    # Handle exon assignment with safe checking
+    if (is.null(data$exon) || length(data$exon) == 0 || is.na(data$exon)) {
+      # Try to get exon from gene_info, with fallback to random number
+      rank_data <- gene_info[data$gene_symbol, "rank"]
+      if (!is.na(rank_data) && rank_data != "") {
+        data$exon <- sample(strsplit(rank_data, ";")[[1]], 1)
+      } else {
+        data$exon <- sample(1:20, 1)
+      }
+    }
+
     data$zygosity <- sample(
       field_values$zygosity, 1,
       prob = c(.8, .2)
@@ -171,7 +214,10 @@ sample_variants <- function(genes) {
       field_values$interpretation, 1,
       prob = c(.6, .3, .1)
     )
-    data$maf <- gen_maf(1)[1, , drop = TRUE]
+    maf <- gen_maf(1)[1, , drop = TRUE]
+    data$mafac <- maf$ac
+    data$mafan <- maf$an
+    data$mafaf <- maf$af
     data
   }, simplify = FALSE)
 }
@@ -222,6 +268,13 @@ generate_mockup <- function() {
   data$analysis_type <- sample_field("analysis_types")
   data$variants <- sample_variants(names(data$tested_genes))
   data$num_variants <- length(data$variants)
+  rgs <- field_values$reference_genomes
+  # Assign multinomial probabilites based on number of entries
+  rg_probs <- rep(0.01, length(rgs))
+  rg_probs[which(rgs == "GRCh38")] <- 1 - 0.01 * (length(rgs) - 1)
+  data$reference_genome <- sample(
+    field_values$reference_genomes, prob = rg_probs
+  )
   data
 }
 
@@ -233,8 +286,6 @@ out <- replicate(num_reports, {
   generate_mockup()
 }, simplify = FALSE)
 names(out) <- uuids
-
-# print(out)
 
 #write JSON output to file
 json_out <- toJSON(out)
