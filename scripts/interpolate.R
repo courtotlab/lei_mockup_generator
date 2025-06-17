@@ -7,7 +7,7 @@ library(hgvsParseR)
 
 #parse command line arguments
 ap <- arg_parser(
-  "interpolate template with mockup values", 
+  "interpolate template with mockup values",
   name = "interpolate.R"
 )
 ap <- add_argument(ap,
@@ -16,63 +16,57 @@ ap <- add_argument(ap,
 )
 ap <- add_argument(ap,
   "json_file",
-  help = "json data file with the values to interpolate into the template (.json)"
+  help = paste(
+    "json data file with the values to",
+    "interpolate into the template (.json)"
+  )
 )
 ap <- add_argument(ap,
   "--outprefix",
   help = "the output file"
 )
 args <- parse_args(ap)
-# args <- list(
-#   template_file = "templates/CHEO_template.tex",
-#   json_file = "mock_data.json",
-#   outprefix = "test/CHEO"
-# )
 if (is.na(args$outprefix)) {
-  args$outprefix = sub("\\.tex$", "", basename(args$template_file))
+  args$outprefix <- sub("\\.tex$", "", basename(args$template_file))
 }
 
 # Read the template
 lines <- readLines(args$template_file)
 text <- paste(lines, collapse = "\n")
+
+# Load the blurb generation text pieces
 blurb_data <- read_yaml("data/text_pieces.yml")
 
 # Read the json data
 mock_data <- fromJSON(args$json_file)
 
-#helper function to extract data labels from template
-extract <- function(text, rx, capture = TRUE) {
-  matches <- gregexpr(rx, text, perl = TRUE)
-  pos <- matches[[1]]
-  if (length(pos) == 1 && pos[[1]] == -1) {
-    #no matches, return empty data frame
-    return(data.frame(label = character(), start = integer(), end = integer()))
-  }
-  len <- attr(matches[[1]], "match.length")
-  if (capture) {
-    labels <- cbind(
-      attr(matches[[1]], "capture.start"),
-      attr(matches[[1]], "capture.length")
-    ) |> apply(1, \(x) substr(text, x[[1]], x[[1]] + x[[2]] - 1))
-  } else {
-    labels <- NA
-  }
-  data.frame(label = labels, start = pos, end = pos + len - 1)
+#check that the template file exists and is a valid tex file
+if (!file.exists(args$template_file)) {
+  stop("Template file does not exist: ", args$template_file)
+}
+if (!grepl("\\.tex$", args$template_file)) {
+  stop("Template file must be a .tex file: ", args$template_file)
 }
 
-# helper function to escape special characters for latex
-tex_escape <- function(str) {
-  #fixed substitution with pipe support
-  g <- function(x, s, r) gsub(s, r, x, fixed = TRUE)
-  #auto-prepend backslash
-  e <- function(x, s) g(x, s, paste0("\\", s))
-  #sequentially apply all rules
-  str |>
-    g("\\", "\\textasciibackslash") |>
-    g("~", "\\textasciitilde") |>
-    g("^", "\\textasciicircum") |>
-    e("%") |> e("&") |> e("$") |> e("#") |> e("_") |> e("{") |> e("}")
+#derive plugin file from template name
+plugin_file <- sub(".tex", "_plugin.R", args$template_file, fixed = TRUE)
+if (!file.exists(plugin_file)) {
+  warning("The selected template does not have a corresponding plugin file: ",
+       plugin_file)
+} else {
+  #source the plugin file
+  source(plugin_file)
+  if (!exists("long_blurb") || !is.function(long_blurb)) {
+    stop(
+      "The plugin file ", plugin_file,
+      " does not define a long_blurb function!"
+    )
+  }
 }
+
+####################
+# HELPER FUNCTIONS #
+####################
 
 #capitalize a word ("hello" -> "Hello")
 cap <- function(txt) {
@@ -82,7 +76,7 @@ cap <- function(txt) {
 #convert a number to text (2 -> "two")
 num2text <- function(num, one = FALSE) {
   if (num == 1 && !one) {
-    "a" # says "a" instead of "one"
+    return("a") # says "a" instead of "one"
   }
   blurb_data$numbers[[num]]
 }
@@ -131,77 +125,57 @@ summary_blurb <- function(variants, suffix = "detected.") {
   )
 }
 
-long_blurb <- function(variants) {
-  #if there are no variants, we're done
-  if (length(variants) == 0) {
-    return("No variants were detected.")
+#helper function to extract data labels from template
+# parameters:
+# - text: the template text
+# - rx: the regular expression to match
+# - capture: whether to capture the label names (default TRUE)
+# returns: a data frame with label names, start and end positions
+extract <- function(text, rx, capture = TRUE) {
+  matches <- gregexpr(rx, text, perl = TRUE)
+  pos <- matches[[1]]
+  if (length(pos) == 1 && pos[[1]] == -1) {
+    #no matches, return empty data frame
+    return(data.frame(label = character(), start = integer(), end = integer()))
   }
-
-  intro_sentence <- paste(
-    summary_blurb(variants, suffix = ""),
-    if (length(variants) == 1) "was" else "were",
-    "detected in this individual. The interpretation of this result",
-    "is summarized below."
-  )
-
-  hgvsps <- sapply(variants, `[[`, "hgvsp")
-  var_data <- hgvsParseR::parseHGVS(hgvsps)
-
-  var_blurbs <- lapply(seq_along(variants), \(i) {
-    variant <- c(variants[[i]], var_data[i, ])
-    if (!is.na(variant$variant) && variant$variant == "Ter") {
-      variant$type <- "stop"
-    }
-    paste(
-      "The", variant$hgvsc, "variant in", variant$gene_symbol,
-      switch(variant$type, 
-        synonymous = "causes no amino acid change.",
-        stop = paste(
-          "causes an early translation termination at position",
-          variant$start, "."
-        ),
-        substitution = paste(
-          "causes an amino acid substitution, which replaces",
-          aaname(variant$ancestral), "with", aaname(variant$variant),
-          "at position", variant$start , "."
-        )
-      ),
-      "It was identified in 1/250010 (0.0004\\%) of alleles tested from",
-      "control populations in the Genome Aggregation Database (gnomAD).",
-      "To the best of our knowledge, it has not been previously reported",
-      "in the literature. The", paste0(variant$ancestral, variant$start),
-      "residue is weakly conserved in evolution.",
-      "In silico analysis programs (SIFT, PolyPhen-2, Mutation Taster) predict",
-      "this variant",
-      if (grepl("uncertain", variant$interpretation)) {
-        "to be tolerated"
-      } else {
-        "not to be tolerated"
-      }, ". This variant is listed in ClinVar ",
-      paste0("(",variant$variant_id,")."), 
-      if (grepl("uncertain", variant$interpretation)) {
-        paste(
-          "In our opinion, the evidence collected to date is",
-          "insufficient to firmly establish the clinical significance of this",
-          "variant, therefore it is classified as a",
-          tolower(variant$interpretation), "."
-        )
-      } else {
-        paste(
-          "In accordance with existing evidence, this variant is therefore",
-          "classified as a", tolower(variant$interpretation), "variant."
-        )
-      }
-    )
-  })
-
-  paste(
-    intro_sentence, "\n\n",
-    paste0(var_blurbs, collapse = "\n\n")
-  )
+  len <- attr(matches[[1]], "match.length")
+  if (capture) {
+    labels <- cbind(
+      attr(matches[[1]], "capture.start"),
+      attr(matches[[1]], "capture.length")
+    ) |> apply(1, \(x) substr(text, x[[1]], x[[1]] + x[[2]] - 1))
+  } else {
+    labels <- NA
+  }
+  data.frame(label = labels, start = pos, end = pos + len - 1)
 }
 
+# helper function to escape special characters for latex
+tex_escape <- function(str) {
+  #fixed substitution with pipe support
+  g <- function(x, s, r) gsub(s, r, x, fixed = TRUE)
+  #auto-prepend backslash
+  e <- function(x, s) g(x, s, paste0("\\", s))
+  #sequentially apply all rules
+  str |>
+    g("\\", "\\textasciibackslash") |>
+    g("~", "\\textasciitilde") |>
+    g("^", "\\textasciicircum") |>
+    e("%") |>
+    e("&") |>
+    e("$") |>
+    e("#") |>
+    e("_") |>
+    e("{") |>
+    e("}")
+}
+
+##############
+# MAIN LOGIC #
+##############
+
 #extract iterator sections
+
 rx_begin_iter <- "\\\\begin\\{dataiter\\}\\{([^}]+)\\}"
 rx_end_iter <- "\\\\end\\{dataiter\\}"
 iter_starts <- extract(text, rx_begin_iter)
@@ -227,7 +201,6 @@ rx_field <- "\\\\data\\{([^}]+)\\}"
 section_fields <- lapply(text_sections, \(txt) extract(txt, rx_field))
 
 #iterate over datasets
-# for (uuid in names(mock_data)) {
 outputs <- lapply(names(mock_data), \(uuid) {
   dataset <- mock_data[[uuid]]
   #perform interpolations
@@ -241,17 +214,24 @@ outputs <- lapply(names(mock_data), \(uuid) {
         label <- fields[j, "label"]
         marker <- paste0("\\data{", label, "}")
         if (label == "blurb") {
-          blurb <- long_blurb(dataset$variants)
-          txt <- sub(marker, blurb, txt, fixed = "TRUE")
+          # Use the plugin's blurb function if available,
+          if (exists("long_blurb") && is.function(long_blurb)) {
+            blurb <- long_blurb(dataset$variants)
+          } else {
+            warning("Missing blurb function from plugin for this template")
+            blurb <- paste("No explanation is available, please contact lab.",
+                           "This is a placeholder for the blurb.")
+          }
+          txt <- sub(marker, blurb, txt, fixed = TRUE)
         } else if (label == "summary_blurb") {
           blurb <- summary_blurb(dataset$variants)
           txt <- sub(marker, blurb, txt, fixed = "TRUE")
         } else if (!(label %in% names(dataset))) {
           cat("Skipping unsupported label: ", label, "\n")
-          txt <- sub(marker, "MISSING DATA!", txt, fixed = "TRUE")
+          txt <- sub(marker, paste0("{\\it Missing data} ", label),
+                     txt, fixed = TRUE)
         } else {
           value <- tex_escape(dataset[[label]])
-          # cat(label, " -> ", value, "\n")
           txt <- sub(marker, value, txt, fixed = "TRUE")
         }
       }
@@ -272,7 +252,6 @@ outputs <- lapply(names(mock_data), \(uuid) {
             row <- sub(marker, "MISSING DATA!", row, fixed = TRUE)
           } else {
             value <- tex_escape(sds[[label]])
-            # cat(label, " -> ", value, "\n")
             row <- sub(marker, value, row, fixed = TRUE)
           }
         }

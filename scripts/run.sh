@@ -24,7 +24,7 @@ EOF
 #Parse Arguments
 PARAMS=""
 OUTDIR="out/"
-AMOUNT=10
+AMOUNT=1
 while (( "$#" )); do
   case "$1" in
     -h|--help)
@@ -66,27 +66,34 @@ while (( "$#" )); do
 done
 #reset command arguments as only positional parameters
 eval set -- "$PARAMS"
-
-TEMPLATE="${1:-templates/CHEO_template.tex}"
+#Template is the first positional parameter. If not provided, use a default template
+TEMPLATE="${1:-templates/fakeHospital2.tex}"
 # Check if the template file exists
 if [[ ! -f "$TEMPLATE" ]]; then
   echo "Template file not found: $TEMPLATE"
   exit 1
 fi
-# Check if the output directory exists, if not create it
+
+echo "Output directory: $OUTDIR"
 mkdir -p "$OUTDIR"
+DATA="$OUTDIR/mock_data.json"
 
-# Define location for mock data
-DATA="${OUTDIR}mock_data.json"
+# Generate mock data using the AMOUNT variable
+echo "Generating mock data files..."
+Rscript scripts/generate_mock_data.R --amount "$AMOUNT" --outfile "$DATA"
 
-# Generate the mock data
-Rscript scripts/generate_mock_data.R --amount 10 --outfile "$DATA"
-# Interpolate the template with the mock data
-Rscript scripts/interpolate.R "$TEMPLATE" "$DATA" --outprefix "${OUTDIR}/report_"
-# Compile the interpolated LaTeX files to PDF
+# Run interpolate with the given template and generated data
+echo "Interpolating JSON files with template..."
+Rscript scripts/interpolate.R "$TEMPLATE" "$DATA" --outprefix "$OUTDIR/report_"
+
+# Compile all generated .tex files into PDFs and clean up
+echo "Compiling LaTeX files into PDFs..."
 cd "$OUTDIR"
-for TEXFILE in *.tex; do
-  pdflatex -halt-on-error -interaction batchmode "$TEXFILE" && 
-    rm "${TEXFILE%.tex}.aux" "${TEXFILE%.tex}.log" "${TEXFILE%.tex}.tex"
+for TEXFILE in report_*.tex; do
+  echo "Compiling $TEXFILE"
+  pdflatex -halt-on-error -interaction batchmode "$TEXFILE" && \
+  rm "${TEXFILE%.tex}.aux" "${TEXFILE%.tex}.log" "${TEXFILE%.tex}.tex"
 done
 cd -
+
+echo "All done."
