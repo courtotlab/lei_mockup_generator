@@ -12,6 +12,46 @@
 #   stop("Missing required functions: ", paste(still_missing, collapse = ", "))
 # }
 
+# generates a summary text blurb for a set of variants
+summary_blurb <- function(variants, suffix = "detected.") {
+  #if there are no variants, we're done
+  if (length(variants) == 0) {
+    return(paste("No variants", suffix))
+  }
+  interpretations <- sapply(variants, `[[`, "interpretation")
+  #rename "pathogenic" to "pathogenic variant", etc
+  interpretations <- sapply(interpretations, \(iname) {
+    #also, convert to lower case
+    iname <- tolower(iname)
+    if (!grepl("variant", iname)) {
+      paste(iname, "variant")
+    } else {
+      iname
+    }
+  })
+  #count how many there are of each type
+  inter_table <- table(interpretations)
+  #generate strings for each type/number (e.g "two pathogenic variants")
+  vstrings <- sapply(names(inter_table), \(iname) {
+    #translate the number to a text string (2 -> "two")
+    numstr <- inter_table[[iname]] |> num2text()
+    #add plural when number is greater 1
+    if (inter_table[[iname]] > 1) {
+      iname <- sub("variant", "variants", iname)
+    }
+    paste(numstr, iname)
+  })
+  #if there's only one type, we're done
+  if (length(vstrings) == 1) {
+    return(cap(paste(vstrings[[1]], suffix)))
+  }
+  #concatenate with commas and "and"
+  paste(
+    paste(vstrings[-length(vstrings)], collapse = ", "),
+    "and", vstrings[[length(vstrings)]], suffix
+  )
+}
+
 long_blurb <- function(variants) {
   #if there are no variants, we're done
   if (length(variants) == 0) {
