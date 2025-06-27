@@ -1,4 +1,4 @@
-#!/usr/bin/Rscript
+#!/usr/bin/env Rscript
 # mockups.R generates a mock dataset in JSON format
 
 library(yaml)
