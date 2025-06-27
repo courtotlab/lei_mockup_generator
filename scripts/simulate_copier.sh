@@ -41,6 +41,9 @@ NOISE_INTENSITY=$(runif 0.1 2)
 # NOISE_INTENSITY=$(runif 1 10)
 
 # Use ImageMagick to apply the distressing effect
-magick -density 200 "${INPDF}" -colorspace gray -linear-stretch "${STRETCH_PERCENT}%x10%" -rotate "${ROTATE_DEGREES}" -repage +0 -blur ${BLUR_RADIUS}x${BLUR_SIGMA} -attenuate ${NOISE_INTENSITY} +noise poisson "${OUTPDF}"
+magick -density 200 "${INPDF}" -colorspace gray \
+  -linear-stretch "${STRETCH_PERCENT}%x10%" -rotate "${ROTATE_DEGREES}" \
+  -repage +0 -blur ${BLUR_RADIUS}x${BLUR_SIGMA} \
+  -attenuate ${NOISE_INTENSITY} +noise poisson "${OUTPDF}"
 
 echo "Success!"
