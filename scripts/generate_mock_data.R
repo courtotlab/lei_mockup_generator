@@ -109,6 +109,7 @@ gen_dates <- function() {
 
 # Generate mock variants
 # TODO: Future iterations could sample from Clinvar instead
+# TODO: Implement, indels, duplications, deletions, etc
 gen_var <- function(gene, amount = 1) {
   cds <- gene_info[gene, "coding"]
   pos <- sample(nchar(cds), amount)
@@ -176,7 +177,31 @@ find_exon_number <- function(chromosome, hgvsg, gene_symbol, exons_df) {
 }
 
 
+get_type <- function(hgvsp) {
+  # Parse HGVS protein change to determine type
+  if (grepl("fs", hgvsp)) {
+    return("frameshift")
+  } else if (grepl("Ter", hgvsp)) {
+    return("nonsense")
+  } else if (grepl("=", hgvsp)) {
+    return("synonymous")
+  } else {
+    return("missense")
+  }
+}
 
+gen_mega_hgvs <- function(transcript_id, gene_symbol, hgvsc, hgvsp, zygosity) {
+  # Generate a comprehensive HGVS string for the variant
+  paste0(
+    transcript_id, "(", gene_symbol, "):[",
+    hgvsc, "(", hgvsp, ")]:[",
+    switch(zygosity,
+      homozygous = paste0(hgvsc, "(", hgvsp, ")"),
+      heterozygous = "="
+    ),
+    "]"
+  )
+}
 
 
 #Sample random variants
@@ -192,6 +217,7 @@ sample_variants <- function(genes) {
     var_data <- gen_var(data$gene_symbol)
     hgvs <- gen_hgvs(var_data, data$gene_symbol)
     data <- c(data, hgvs[, 1:3])
+    data$type <- get_type(data$hgvsp)
     # TODO: Add aapos, fromAA, toAA
     data$transcript_id <- gene_info[data$gene_symbol, "refseq_mrna"]
 
@@ -218,6 +244,9 @@ sample_variants <- function(genes) {
     data$mafac <- maf$ac
     data$mafan <- maf$an
     data$mafaf <- maf$af
+    data$mega_hgvs <- with(data, gen_mega_hgvs(
+      transcript_id, gene_symbol, hgvsc, hgvsp, zygosity
+    ))
     data
   }, simplify = FALSE)
 }
