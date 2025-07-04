@@ -31,6 +31,9 @@ if (is.na(args$outprefix)) {
 }
 
 # Read the template
+if (!file.exists(args$template_file)) {
+  stop("Template file does not exist: ", args$template_file)
+}
 lines <- readLines(args$template_file)
 text <- paste(lines, collapse = "\n")
 
@@ -48,6 +51,9 @@ data_dir <- normalizePath(paste0(dirname(script_path()), "/../data"))
 blurb_data <- read_yaml(paste0(data_dir, "/text_pieces.yml"))
 
 # Read the json data
+if (!file.exists(args$json_file)) {
+  stop("JSON data file does not exist: ", args$json_file)
+}
 mock_data <- fromJSON(args$json_file)
 
 #check that the template file exists and is a valid tex file
@@ -138,6 +144,14 @@ tex_escape <- function(str) {
     e("_") |>
     e("{") |>
     e("}")
+}
+
+# helper function to generate a random PubMed ID
+# to be used by the plugin functions
+generate_pubmed <- function(amount = sample.int(10, 1)) {
+  #generate 1 to 10 random integers between 1e7 and 3e7
+  #this is a rough approximation of the PubMed ID range
+  sample.int(30000000L, amount) + 10000000L
 }
 
 ##############
