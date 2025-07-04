@@ -152,11 +152,6 @@ long_blurb <- function(variants) {
   }) |> paste(collapse = "\n\n")
 }
 
-generate_pubmed <- function() {
-  #generate 1 to 10 random integers between 1e7 and 3e7
-  #this is a rough approximation of the PubMed ID range
-  sample.int(30000000L, sample.int(10, 1)) + 10000000L
-}
 
 # Based on the following evidence, the CHEK2 c. 1100de|C (p. Thr367Metfs*15) variant is classified as pathogenic: 1) this
 # frameshift variant leads to a premature termination codon, which is predicted to result in a truncated or absent protein; 2)
