@@ -67,17 +67,20 @@ if (!grepl("\\.tex$", args$template_file)) {
 #derive plugin file from template name
 plugin_file <- sub(".tex", "_plugin.R", args$template_file, fixed = TRUE)
 if (!file.exists(plugin_file)) {
-  warning("The selected template does not have a corresponding plugin file: ",
-       plugin_file)
+  warning(
+    "The selected template does not have a corresponding plugin file: ",
+    plugin_file
+  )
 } else {
   #source the plugin file
+  before <- ls()
   source(plugin_file)
-  if (!exists("long_blurb") || !is.function(long_blurb)) {
-    stop(
-      "The plugin file ", plugin_file,
-      " does not define a long_blurb function!"
-    )
-  }
+  loaded_functions <- setdiff(ls(), c(before, "before"))
+  cat(
+    "Loaded plugin functions",
+    paste(loaded_functions, collapse = ", "),
+    "from file", plugin_file, ".\n"
+  )
 }
 
 ####################
@@ -197,19 +200,29 @@ outputs <- lapply(names(mock_data), \(uuid) {
       for (j in seq_len(nrow(fields))) {
         label <- fields[j, "label"]
         marker <- paste0("\\data{", label, "}")
-        if (label == "blurb") {
-          # Use the plugin's blurb function if available,
-          if (exists("long_blurb") && is.function(long_blurb)) {
-            blurb <- long_blurb(dataset$variants)
+        if (startsWith(label, "plugin:")) {
+          # derive the function name
+          fname <- trimws(sub("^plugin:", "", label))
+          # check that the function exists
+          if (!exists(fname) || !is.function(get(fname))) {
+            warning("Plugin function ", fname, " does not exist!")
+            blurb <- "{\\it Missing plugin function!}"
           } else {
-            warning("Missing blurb function from plugin for this template")
-            blurb <- paste("No explanation is available, please contact lab.",
-                           "This is a placeholder for the blurb.")
+            # call the plugin function
+            blurb <- do.call(fname, list(dataset))
           }
+          # # Use the plugin's blurb function if available,
+          # if (exists("long_blurb") && is.function(long_blurb)) {
+          #   blurb <- long_blurb(dataset$variants)
+          # } else {
+          #   warning("Missing blurb function from plugin for this template")
+          #   blurb <- paste("No explanation is available, please contact lab.",
+          #                  "This is a placeholder for the blurb.")
+          # }
           txt <- sub(marker, blurb, txt, fixed = TRUE)
-        } else if (label == "summary_blurb") {
-          blurb <- summary_blurb(dataset$variants)
-          txt <- sub(marker, blurb, txt, fixed = "TRUE")
+        # } else if (label == "summary_blurb") {
+        #   blurb <- summary_blurb(dataset$variants)
+        #   txt <- sub(marker, blurb, txt, fixed = "TRUE")
         } else if (!(label %in% names(dataset))) {
           cat("Skipping unsupported label: ", label, "\n")
           txt <- sub(marker, paste0("{\\it Missing data} ", label),

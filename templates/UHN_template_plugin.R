@@ -1,6 +1,7 @@
 
 # generates a summary text blurb for a set of variants
-summary_blurb <- function(variants, suffix = "are present in this patient.") {
+summary_blurb <- function(dataset, suffix = "are present in this patient.") {
+  variants <- dataset$variants
   #if there are no variants, we're done
   if (length(variants) == 0) {
     return(paste("No variants", suffix))
@@ -18,7 +19,8 @@ summary_blurb <- function(variants, suffix = "are present in this patient.") {
   )
 }
 
-long_blurb <- function(variants) {
+long_blurb <- function(dataset) {
+  variants <- dataset$variants
   #if there are no variants, we're done
   if (length(variants) == 0) {
     return("No variants were detected.")

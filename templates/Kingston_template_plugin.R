@@ -1,4 +1,5 @@
-summary_blurb <- function(variants) {
+summary_blurb <- function(dataset) {
+  variants <- dataset$variants
   #if there are no variants, we're done
   if (length(variants) == 0) {
     return(paste("No variants", suffix))
@@ -22,7 +23,8 @@ summary_blurb <- function(variants) {
   }
 }
 
-long_blurb <- function(variants) {
+long_blurb <- function(dataset) {
+  variants <- dataset$variants
   #if there are no variants, we're done
   if (length(variants) == 0) {
     return("No variants were detected.")

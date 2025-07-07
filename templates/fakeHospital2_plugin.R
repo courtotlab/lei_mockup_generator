@@ -1,6 +1,7 @@
 
 # generates a summary text blurb for a set of variants
-summary_blurb <- function(variants, suffix = "detected.") {
+summary_blurb <- function(dataset, suffix = "detected.") {
+  variants <- dataset$variants
   #if there are no variants, we're done
   if (length(variants) == 0) {
     return(paste("No variants", suffix))
@@ -39,7 +40,8 @@ summary_blurb <- function(variants, suffix = "detected.") {
   )
 }
 
-long_blurb <- function(variants) {
+long_blurb <- function(dataset) {
+  variants <- dataset$variants
   #if there are no variants, we're done
   if (length(variants) == 0) {
     return("No variants were detected.")
@@ -48,7 +50,7 @@ long_blurb <- function(variants) {
   var_data <- hgvsParseR::parseHGVS(hgvsps)
   intro_sentence <- paste(
     "\\newline The interpretation of these variants is as follows:",
-    summary_blurb(variants, suffix = " "),
+    summary_blurb(dataset, suffix = " "),
     if (length(variants) == 1) "was" else "were",
     "detected in the sample."
   )

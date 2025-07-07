@@ -1,5 +1,6 @@
 
-summary_blurb <- function(variants) {
+summary_blurb <- function(dataset) {
+  variants <- dataset$variants
   prefix <- "Sequencing  identified"
   suffix <- "listed above."
   #if there are no variants, we're done
@@ -43,7 +44,8 @@ summary_blurb <- function(variants) {
 }
 
 
-long_blurb <- function(variants) {
+long_blurb <- function(dataset) {
+  variants <- dataset$variants
   header <- paste0(
     "\\hdashrule[0.5ex]{\\textwidth}{1pt}{1mm}\n\n",
     "\\vspace{-1ex}\n"
