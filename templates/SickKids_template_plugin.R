@@ -35,6 +35,43 @@ get_tmb <- function(...) {
   return(tmb)
 }
 
+vafs <- NULL
+get_vafs <- function(vars) {
+  if (!is.null(vafs)) {
+    return(vafs)
+  }
+  ids <- sapply(vars, `[[`, "mega_hgvs")
+  vafs <<- sprintf("%.02f", runif(length(vars), 5, 85)) |> setNames(ids)
+  return(vafs)
+}
+
+#store modes of inheritance
+inhs <- NULL
+get_inhs <- function(vars) {
+  if (!is.null(inhs)) {
+    return(inhs)
+  }
+  ids <- sapply(vars, `[[`, "mega_hgvs")
+  inhs <<- sapply(vars, `[[`, "chromosome") |>
+    sapply(\(chrom) {
+      paste0(
+        switch(chrom, chrX = "X", "A"),
+        sample(c("D", "R"), 1)
+      )
+    }) |>
+    setNames(ids)
+  return(inhs)
+}
+
+#reset function to delete data from previous documents
+reset <- function(...) {
+  inhs <<- NULL
+  vafs <<- NULL
+  tmb <<- NULL
+  var_groups <<- list()
+  return("")
+}
+
 findings_tables <- function(dataset) {
   variants <- dataset$variants
 
@@ -146,16 +183,6 @@ findings_tables <- function(dataset) {
 
 }
 
-vafs <- NULL
-get_vafs <- function(vars) {
-  if (!is.null(vafs)) {
-    return(vafs)
-  }
-  ids <- sapply(vars, `[[`, "mega_hgvs")
-  vafs <<- sprintf("%.02f", runif(length(vars), 5, 85)) |> setNames(ids)
-  return(vafs)
-}
-
 somatic_table <- function(dataset) {
 
   variants <- dataset$variants
@@ -255,24 +282,6 @@ somatic_sub_blurb <- function(vars, vafs) {
       }
     )
   }) |> paste(collapse = "\n\n")
-}
-
-#store modes of inheritance
-inhs <- NULL
-get_inhs <- function(vars) {
-  if (!is.null(inhs)) {
-    return(inhs)
-  }
-  ids <- sapply(vars, `[[`, "mega_hgvs")
-  inhs <<- sapply(vars, `[[`, "chromosome") |>
-    sapply(\(chrom) {
-      paste0(
-        switch(chrom, chrX = "X", "A"),
-        sample(c("D", "R"), 1)
-      )
-    }) |>
-    setNames(ids)
-  return(inhs)
 }
 
 germline_table <- function(dataset) {
