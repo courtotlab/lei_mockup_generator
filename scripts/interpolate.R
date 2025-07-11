@@ -11,10 +11,6 @@ ap <- arg_parser(
   name = "interpolate.R"
 )
 ap <- add_argument(ap,
-  "template_file",
-  help = "template file to be interpolated (.tex)"
-)
-ap <- add_argument(ap,
   "json_file",
   help = paste(
     "json data file with the values to",
@@ -22,20 +18,23 @@ ap <- add_argument(ap,
   )
 )
 ap <- add_argument(ap,
+  "--template_file",
+  help = "override template file (.tex) to use instead of 
+          automatically chosen ones"
+)
+ap <- add_argument(ap,
+  "--template_dir",
+  help = "the directory in the script will look for templates",
+)
+ap <- add_argument(ap,
   "--outprefix",
-  help = "the output file"
+  help = "the output file",
+  default = "report"
 )
 args <- parse_args(ap)
-if (is.na(args$outprefix)) {
-  args$outprefix <- sub("\\.tex$", "", basename(args$template_file))
-}
-
-# Read the template
-if (!file.exists(args$template_file)) {
-  stop("Template file does not exist: ", args$template_file)
-}
-lines <- readLines(args$template_file)
-text <- paste(lines, collapse = "\n")
+# if (is.na(args$outprefix)) {
+#   args$outprefix <- sub("\\.tex$", "", basename(args$template_file))
+# }
 
 # Find the path to this script
 script_path <- function() {
@@ -49,6 +48,29 @@ script_path <- function() {
 # Load the blurb generation text pieces
 data_dir <- normalizePath(paste0(dirname(script_path()), "/../data"))
 blurb_data <- read_yaml(paste0(data_dir, "/text_pieces.yml"))
+if (is.na(args$template_dir)) {
+  args$template_dir <- normalizePath(
+    paste0(dirname(script_path()), "/../templates")
+  )
+}
+if (!dir.exists(args$template_dir)) {
+  stop("Template directory ", args$template_dir, " does not exist!")
+}
+# Load the template registry
+templates <- unlist(read_yaml(paste0(data_dir, "/template_registry.yml")))
+#validate templates
+tmpl_files <- names(templates) |>
+  lapply(\(tmpl) {
+    paste0(args$template_dir, "/", tmpl, c(".tex", "_plugin.R"))
+  }) |>
+  unlist()
+files_present <- file.exists(tmpl_files) |> setNames(tmpl_files)
+if (!all(files_present)) {
+  stop(
+    "Missing template or plugin files: ",
+    paste(names(which(!files_present)), collapse = ", ")
+  )
+}
 
 # Read the json data
 if (!file.exists(args$json_file)) {
@@ -56,36 +78,26 @@ if (!file.exists(args$json_file)) {
 }
 mock_data <- fromJSON(args$json_file)
 
-#check that the template file exists and is a valid tex file
-if (!file.exists(args$template_file)) {
-  stop("Template file does not exist: ", args$template_file)
-}
-if (!grepl("\\.tex$", args$template_file)) {
-  stop("Template file must be a .tex file: ", args$template_file)
-}
-
-#derive plugin file from template name
-plugin_file <- sub(".tex", "_plugin.R", args$template_file, fixed = TRUE)
-if (!file.exists(plugin_file)) {
-  warning(
-    "The selected template does not have a corresponding plugin file: ",
-    plugin_file
-  )
-} else {
-  #source the plugin file
-  before <- ls()
-  source(plugin_file)
-  loaded_functions <- setdiff(ls(), c(before, "before"))
-  cat(
-    "Loaded plugin functions",
-    paste(loaded_functions, collapse = ", "),
-    "from file", plugin_file, ".\n"
-  )
+#if a static template was providedd, check that the template file 
+#exists and is a valid tex file
+if (!is.na(args$template_file)) {
+  if (!file.exists(args$template_file)) {
+    stop("Template file does not exist: ", args$template_file)
+  }
+  if (!grepl("\\.tex$", args$template_file)) {
+    stop("Template file must be a .tex file: ", args$template_file)
+  }
 }
 
 ####################
 # HELPER FUNCTIONS #
 ####################
+
+match_template <- function(lab_name) {
+  template <- names(which(templates == lab_name))
+  # FIXME: Add parameter for template directory
+  paste0(args$template_dir, "/", template, ".tex")
+}
 
 #capitalize a word ("hello" -> "Hello")
 cap <- function(txt) {
@@ -161,35 +173,86 @@ generate_pubmed <- function(amount = sample.int(10, 1)) {
 # MAIN LOGIC #
 ##############
 
-#extract iterator sections
+parse_template <- function(template_file) {
+  # Read the template
+  if (!file.exists(template_file)) {
+    stop("Template file does not exist: ", template_file)
+  }
+  lines <- readLines(template_file)
+  text <- paste(lines, collapse = "\n")
 
-rx_begin_iter <- "\\\\begin\\{dataiter\\}\\{([^}]+)\\}"
-rx_end_iter <- "\\\\end\\{dataiter\\}"
-iter_starts <- extract(text, rx_begin_iter)
-iter_ends <- extract(text, rx_end_iter, capture = FALSE)
-#assert that each dataiter begin also has an end
-stopifnot(nrow(iter_starts) == nrow(iter_ends))
+  #derive plugin file from template name
+  plugin_file <- sub(".tex", "_plugin.R", template_file, fixed = TRUE)
+  if (!file.exists(plugin_file)) {
+    warning(
+      "The selected template does not have a corresponding plugin file: ",
+      plugin_file
+    )
+  } else {
+    #source the plugin file
+    before <- ls()
+    source(plugin_file)
+    loaded_functions <- setdiff(ls(), c(before, "before"))
+    cat(
+      "Loaded plugin functions",
+      paste(loaded_functions, collapse = ", "),
+      "from file", plugin_file, ".\n"
+    )
+  }
 
-#split text into sections and iterators
-text_sections <- list()
-last_end <- 0
-for (i in seq_len(nrow(iter_starts))) {
-  text_sections[[paste0("text_", i)]] <-
-    substr(text, last_end + 1, iter_starts[i, "start"] - 1)
-  text_sections[[paste0("iter_", i, ":", iter_starts[i, "label"])]] <-
-    substr(text, iter_starts[i, "end"] + 1, iter_ends[i, "start"] - 1)
-  last_end <- iter_ends[i, "end"]
+  #extract iterator sections
+  rx_begin_iter <- "\\\\begin\\{dataiter\\}\\{([^}]+)\\}"
+  rx_end_iter <- "\\\\end\\{dataiter\\}"
+  iter_starts <- extract(text, rx_begin_iter)
+  iter_ends <- extract(text, rx_end_iter, capture = FALSE)
+  #assert that each dataiter begin also has an end
+  stopifnot(nrow(iter_starts) == nrow(iter_ends))
+
+  #split text into sections and iterators
+  text_sections <- list()
+  last_end <- 0
+  for (i in seq_len(nrow(iter_starts))) {
+    text_sections[[paste0("text_", i)]] <-
+      substr(text, last_end + 1, iter_starts[i, "start"] - 1)
+    text_sections[[paste0("iter_", i, ":", iter_starts[i, "label"])]] <-
+      substr(text, iter_starts[i, "end"] + 1, iter_ends[i, "start"] - 1)
+    last_end <- iter_ends[i, "end"]
+  }
+  text_sections[[paste0("text_", i + 1)]] <-
+    substr(text, last_end + 1, nchar(text))
+
+  #extract field positions in each section
+  rx_field <- "\\\\data\\{([^}]+)\\}"
+  section_fields <- lapply(text_sections, \(txt) extract(txt, rx_field))
+
+  return(list(
+    text_sections = text_sections,
+    section_fields = section_fields
+  ))
 }
-text_sections[[paste0("text_", i + 1)]] <-
-  substr(text, last_end + 1, nchar(text))
 
-#extract field positions in each section
-rx_field <- "\\\\data\\{([^}]+)\\}"
-section_fields <- lapply(text_sections, \(txt) extract(txt, rx_field))
+#load override template if one was provided
+if (!is.na(args$template_file)) {
+  tmpl_struc <- parse_template(tmpl_file)
+  text_sections <- tmpl_struc$text_sections
+  section_fields <- tmpl_struc$section_fields
+}
 
 #iterate over datasets
 outputs <- lapply(names(mock_data), \(uuid) {
+  cat("Processing dataset #", uuid, "\n")
   dataset <- mock_data[[uuid]]
+  #determine the correct template for this dataset
+  #unless override was provided
+  if (is.na(args$template_file)) {
+    lab_name <- dataset$testing_laboratory
+    tmpl_file <- match_template(lab_name)
+    cat("Loading template: ", tmpl_file, "\n")
+    #parse the template
+    tmpl_struc <- parse_template(tmpl_file)
+    text_sections <- tmpl_struc$text_sections
+    section_fields <- tmpl_struc$section_fields
+  }
   #perform interpolations
   inter_sections <- lapply(seq_along(text_sections), \(i) {
     section_name <- names(text_sections)[[i]]
