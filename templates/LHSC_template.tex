@@ -35,14 +35,14 @@ Tel: 519 685-8500 Ext 56495 Fax: 519 667-6705
 \large
 \begin{tabular}{r l}
 Name: & {\bf Redacted}\\
-Client:  & IQMH\\
+Client:  & \data{ordering_clinic}\\
 & \\
-PIN/MRN:  & {\bf 901-096497} \\
-Ref \#: &  RF123456789 \\
-Visit \#: &  447833846 \\
+PIN/MRN:  & {\bf Redacted} \\
+Ref \#: &  Redacted \\
+Visit \#: &  Redacted \\
 Location: &  -\\
 Sex: & Male \\
-DOB:  & 1985/01/01 \hspace{1ex} Age:\hspace{1ex} 39 years \\
+DOB:  & Redacted \hspace{1ex} Age:\hspace{1ex} Redacted \\
 & \\
 Ordering Dr:  & Redacted \\
 Attending Dr:  & Redacted\\
@@ -61,17 +61,18 @@ Extra-Intestinal Manifestations (CHRPE, CMV Thyroid, Desmoid) Screen Report
 \end{center}
 \vspace{1ex}
 
-{\bf Sample ID}: MD-24-0004213 / PAO0123456 \hspace{2em} {\bf Specimen}: DNA \hspace{2em} {\bf Received}: 2024/02/28 10:19\\
+%TODO: sample type needs some kind of transformation function ("amplified DNA" -> "DNA")
+{\bf Sample ID}: MD-24-0004213 / PAO0123456 \hspace{2em} {\bf Specimen}: \data{sample_type} \hspace{2em} {\bf Received}: \data{date_received}\\
 \begin{tabular}{ | >{\centering\arraybackslash}p{9cm} | >{\centering\arraybackslash}p{9cm} | }
 \hline
 {\large \bf Variant*} & {\large \bf Classification} \\ \hline
-\begin{dataiter}{variants} \data{gene_symbol}:\data{hgvsc} , \data{hgvsp}{} - \data{zygosity} + & \data{interpretation} \\ \hline
-\end{tabular}
+\begin{dataiter}{variants} \data{gene_symbol}:\data{hgvsc} , \data{hgvsp} + & \data{interpretation} \\ \hline
 \end{dataiter}
+\end{tabular}
 
 \subsection*{Interpretation:}
 \vspace{-1em}
-\data{blurb} 
+\data{plugin:long_blurb} 
 \newline
 Genetic counseling and clinical following are recommended.
 
@@ -85,12 +86,15 @@ Genetic counseling and clinical following are recommended.
 \begin{dataiter}{tested_genes}\data{gene_symbol}, \end{dataiter}
 
 \paragraph{Intronic Regions Tested} (in addition to 20bp flanking coding exons): \\
-\begin{dataiter}{tested_genes} \data{gene_symbol} (\data{refseq_mrna}),\end{dataiter}
+NM\_001127511.2(APC):c.-192A>G
+NM\_001127511.2(APC):c-191T>C
+NM\_001127511.2(APC):c.-190G>A
+NM\_001128425.1(MUTYH):c.504+19\_504+31del
 \vspace{1em}
 
 (Electronically signed by) \\
-Laila Schenkel PhD, FCCMG \\
-2024/03/01
+Redacted \\
+\data{date_verified} \\
 
 \vspace{1em}
 \hrule
@@ -98,7 +102,7 @@ Laila Schenkel PhD, FCCMG \\
 \hrule
 \vspace{1em}
 
-Printed: 2024/03/20 10:03\\
-Request ID: 214736473
+Printed: \data{date_verified}\\
+Request ID: Redacted
 
 \end{document}
