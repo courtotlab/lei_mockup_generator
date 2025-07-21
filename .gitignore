@@ -2,3 +2,6 @@
 original_reports/
 mock_data.json
 test/
+# pixi environments
+.pixi
+*.egg-info
