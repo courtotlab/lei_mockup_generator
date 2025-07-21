@@ -11,15 +11,21 @@ by Jochen Weile <jweile@oicr.on.ca> 2025
 
 This script generates a mock report using R scripts and LaTeX.
 
-Usage: run.sh [-a|--amount <INTEGER>] [-o|--outdir <DIR>] <TEMPLATE> 
+Usage: run.sh [-a|--amount <INTEGER>] [-o|--outdir <DIR>] 
 
-<TEMPLATE>  : The input directory containing the fastq.gz files
 -a|--amount : The number of mock data entries to generate (default: 10)
 -o|--outdir : The output directory where the reports will be saved (default: out/)
 
 EOF
  exit $1
 }
+
+#helper function to print error messages and exit
+die () {
+  echo "ERROR: $1">&2
+  exit 1
+}
+
 
 #Parse Arguments
 PARAMS=""
@@ -66,13 +72,13 @@ while (( "$#" )); do
 done
 #reset command arguments as only positional parameters
 eval set -- "$PARAMS"
-#Template is the first positional parameter. If not provided, use a default template
-TEMPLATE="${1:-templates/fakeHospital2.tex}"
-# Check if the template file exists
-if [[ ! -f "$TEMPLATE" ]]; then
-  echo "Template file not found: $TEMPLATE"
-  exit 1
-fi
+# #Template is the first positional parameter. If not provided, use a default template
+# TEMPLATE="${1:-templates/fakeHospital2.tex}"
+# # Check if the template file exists
+# if [[ ! -f "$TEMPLATE" ]]; then
+#   echo "Template file not found: $TEMPLATE"
+#   exit 1
+# fi
 
 echo "Output directory: $OUTDIR"
 mkdir -p "$OUTDIR"
@@ -84,7 +90,7 @@ Rscript scripts/generate_mock_data.R --amount "$AMOUNT" --outfile "$DATA"
 
 # Run interpolate with the given template and generated data
 echo "Interpolating JSON files with template..."
-Rscript scripts/interpolate.R "$TEMPLATE" "$DATA" --outprefix "$OUTDIR/report_"
+Rscript scripts/interpolate.R "$DATA" --outprefix "$OUTDIR/report"
 
 # Compile all generated .tex files into PDFs and clean up
 echo "Compiling LaTeX files into PDFs..."
@@ -92,8 +98,16 @@ cd "$OUTDIR"
 for TEXFILE in report_*.tex; do
   echo "Compiling $TEXFILE"
   pdflatex -halt-on-error -interaction batchmode "$TEXFILE" && \
-  rm "${TEXFILE%.tex}.aux" "${TEXFILE%.tex}.log" "${TEXFILE%.tex}.tex"
+  rm "${TEXFILE%.tex}.aux" "${TEXFILE%.tex}.log" "${TEXFILE%.tex}.tex" || \
+  die "Compilation failed. Check ${TEXFILE%.tex}.log for error message."
 done
 cd -
+
+# Distress the generated PDFs
+echo "Distressing PDFs..."
+for PDF in "$OUTDIR"/report_*.pdf; do
+  echo "Distressing $PDF"
+  scripts/simulate_copier.sh "$PDF"
+done
 
 echo "All done."
