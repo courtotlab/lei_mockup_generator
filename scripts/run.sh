@@ -42,8 +42,7 @@ while (( "$#" )); do
         AMOUNT="$2"
         shift 2
       else
-        echo "ERROR: Argument for $1 is missing" >&2
-        usage 1
+        die "Argument for $1 is missing"
       fi
       ;;
     -o|--outdir)
@@ -51,8 +50,7 @@ while (( "$#" )); do
         OUTDIR="$2"
         shift 2
       else
-        echo "ERROR: Argument for $1 is missing" >&2
-        usage 1
+        die "ERROR: Argument for $1 is missing" 
       fi
       ;;
     --) # end of options indicates that the main command follows
@@ -61,8 +59,7 @@ while (( "$#" )); do
       eval set -- ""
       ;;
     -*|--*=) # unsupported flags
-      echo "ERROR: Unsupported flag $1" >&2
-      usage 1
+      die "ERROR: Unsupported flag $1" 
       ;;
     *) # positional parameter
       PARAMS="$PARAMS $1"
@@ -79,6 +76,11 @@ eval set -- "$PARAMS"
 #   echo "Template file not found: $TEMPLATE"
 #   exit 1
 # fi
+
+# Check if TeX-live or tinytex is installed
+if [[ -z $(which pdflatex) ]]; then
+  die "LaTeX or TeXlive is not installed!"
+fi
 
 echo "Output directory: $OUTDIR"
 mkdir -p "$OUTDIR"
@@ -98,7 +100,7 @@ cd "$OUTDIR"
 for TEXFILE in report_*.tex; do
   echo "Compiling $TEXFILE"
   pdflatex -halt-on-error -interaction batchmode "$TEXFILE" && \
-  rm "${TEXFILE%.tex}.aux" "${TEXFILE%.tex}.log" "${TEXFILE%.tex}.tex" || \
+  rm -f "${TEXFILE%.tex}.aux" "${TEXFILE%.tex}.log" "${TEXFILE%.tex}.tex" || \
   die "Compilation failed. Check ${TEXFILE%.tex}.log for error message."
 done
 cd -
