@@ -13,7 +13,7 @@ summary_blurb <- function(dataset) {
     paste(
       "Variants were detected in the",
       paste(
-        sapply(variants, `[[`, "gene_symbol")[[-length(variants)]],
+        sapply(variants, `[[`, "gene_symbol")[-length(variants)],
         collapse = ", "
       ),
       "and",

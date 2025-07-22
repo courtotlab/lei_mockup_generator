@@ -95,14 +95,13 @@ gen_maf <- function(amount = 1, max_pop = 5e5) {
 # Generate a set of threee dates (collected, received, verified)
 gen_dates <- function() {
   #generate a random date in the range of 2020-2025
-  d1 <- paste0(
-    "20", sample(20:25, 1), "-", sample(12, 1), "-",
-    sample(29, 1), " ", sample(23, 1), ":", sample(59, 1)
-  ) |> as.POSIXct()
+  jan2020 <- 1577854800L
+  dec2025 <- 1767243540L
+  d1 <- runif(1, jan2020, dec2025) |> as.integer() |> as.POSIXct()
   # add a random amount of time in the range of a few days to the date
   # to get the received and verified dates
-  d2 <- d1 + round(rnorm(1, mean = 60 * 60 * 24, sd = 60 * 60 * 12))
-  d3 <- d2 + round(rnorm(1, mean = 60 * 60 * 24, sd = 60 * 60 * 12))
+  d2 <- d1 + round(rnorm(1, mean = 60 * 60 * 24 * 1.5, sd = 60 * 60 * 12))
+  d3 <- d2 + round(rnorm(1, mean = 60 * 60 * 24 * 1.5, sd = 60 * 60 * 12))
   list(
     date_collected = as.character(d1),
     date_received = as.character(d2),
