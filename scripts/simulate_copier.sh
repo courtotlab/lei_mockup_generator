@@ -15,35 +15,59 @@ fi
 
 # Helper function to generate gaussian distributed random numbers
 rnorm() {
-  SD=$1
-  Rscript -e "rnorm(1,0,${SD})|>format(digits=2)|>cat('\n')"
+  local sd=$1
+  Rscript -e "rnorm(1,0,${sd})|>format(digits=2)|>cat('\n')"
 }
 # Helper function to generate uniformly distributed random numbers
 runif() {
-  MIN=$1
-  MAX=$2
-  Rscript -e "runif(1,${MIN},${MAX})|>format(digits=2)|>cat('\n')"
+  local min=$1
+  local max=$2
+  Rscript -e "runif(1,${min},${max})|>format(digits=2)|>cat('\n')"
 }
 # Helper function to generate random integers in a range
 rint() {
-  MIN=$1
-  MAX=$2
-  echo $RANDOM % $((MAX - MIN + 1)) + $MIN | bc
+  local min=$1
+  local max=$2
+  echo "$RANDOM % $((max - min + 1)) + $min" | bc
 }
 
 # Randomly pick parameters for the distressing effect
-BLUR_RADIUS=$(rint 0 2)
-BLUR_SIGMA=$(runif 0.5 1.5)
-STRETCH_PERCENT=$(rint 1 7)
-ROTATE_DEGREES=$(runif "-1" "1")
-# ROTATE_DEGREES=$(rnorm 0.2)
-NOISE_INTENSITY=$(runif 0.1 2)
-# NOISE_INTENSITY=$(runif 1 10)
+randomizedParams() {
+  BLUR_RADIUS=$(rint 0 2)
+  BLUR_SIGMA=$(runif 0.5 1.5)
+  STRETCH_PERCENT=$(rint 1 7)
+  ROTATE_DEGREES=$(runif "-1" "1")
+  NOISE_INTENSITY=$(runif 0.1 2)
+}
+
+# Fixed parameters for debugging
+fixedParams() {
+  echo "Using fixed parameters!"
+  BLUR_RADIUS=1
+  BLUR_SIGMA=1.0
+  STRETCH_PERCENT=7
+  ROTATE_DEGREES=1
+  NOISE_INTENSITY=1.5
+}
 
 # Use ImageMagick to apply the distressing effect
-magick -density 200 "${INPDF}" -colorspace gray \
-  -linear-stretch "${STRETCH_PERCENT}%x10%" -rotate "${ROTATE_DEGREES}" \
-  -repage +0 -blur ${BLUR_RADIUS}x${BLUR_SIGMA} \
-  -attenuate ${NOISE_INTENSITY} +noise poisson "${OUTPDF}"
+debug() {
+  fixedParams
+  magick -density 200 "${INPDF}" -colorspace gray \
+    -linear-stretch "${STRETCH_PERCENT}%x10%" -rotate "${ROTATE_DEGREES}" \
+    -repage +0 -blur ${BLUR_RADIUS}x${BLUR_SIGMA} \
+    -attenuate ${NOISE_INTENSITY} +noise poisson "${OUTPDF}" && \
+    echo "Success!"
+}
 
-echo "Success!"
+main() {
+  fixedParams
+  magick -density 200 "${INPDF}" -colorspace gray \
+    -rotate "${ROTATE_DEGREES}" -linear-stretch "${STRETCH_PERCENT}%x10%" \
+    +repage -blur ${BLUR_RADIUS}x${BLUR_SIGMA} \
+    -attenuate ${NOISE_INTENSITY} +noise poisson "${OUTPDF}" && \
+    echo "Success!"
+}
+
+main
+
