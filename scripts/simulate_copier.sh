@@ -61,7 +61,7 @@ debug() {
 }
 
 main() {
-  fixedParams
+  randomizedParams
   magick -density 200 "${INPDF}" -colorspace gray \
     -rotate "${ROTATE_DEGREES}" -linear-stretch "${STRETCH_PERCENT}%x10%" \
     +repage -blur ${BLUR_RADIUS}x${BLUR_SIGMA} \
