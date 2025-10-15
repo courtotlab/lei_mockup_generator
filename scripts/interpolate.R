@@ -19,7 +19,7 @@ ap <- add_argument(ap,
 )
 ap <- add_argument(ap,
   "--template_file",
-  help = "override template file (.tex) to use instead of 
+  help = "override template file (.tex) to use instead of
           automatically chosen ones"
 )
 ap <- add_argument(ap,
@@ -78,7 +78,7 @@ if (!file.exists(args$json_file)) {
 }
 mock_data <- fromJSON(args$json_file)
 
-#if a static template was providedd, check that the template file 
+#if a static template was providedd, check that the template file
 #exists and is a valid tex file
 if (!is.na(args$template_file)) {
   if (!file.exists(args$template_file)) {
@@ -233,7 +233,7 @@ parse_template <- function(template_file) {
 
 #load override template if one was provided
 if (!is.na(args$template_file)) {
-  tmpl_struc <- parse_template(tmpl_file)
+  tmpl_struc <- parse_template(args$template_file)
   text_sections <- tmpl_struc$text_sections
   section_fields <- tmpl_struc$section_fields
 }

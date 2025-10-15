@@ -7,3 +7,10 @@ out/
 .pixi
 *.egg-info
 out/
+
+# TeX files
+# Only seeks root folder
+/*.aux
+/*.log
+/*.pdf
+/*.tex
