@@ -5,6 +5,9 @@ library(yaml)
 library(hgvsParseR)
 library(RJSONIO)
 library(argparser)
+library(stringr)
+library(data.table)
+
 #parse command line arguments
 ap <- arg_parser("generate a mock dataset in JSON format", name = "mockups.R")
 ap <- add_argument(ap,
@@ -26,6 +29,41 @@ field_values <- yaml.load_file("data/field_values.yml")
 gene_info <- read.csv("data/gene_info.csv", row.names = 1)
 exons_df <- read.csv("data/exon_info.csv", stringsAsFactors = FALSE)
 
+# Download file if it doesn't exist
+# Used for larger files
+download_if_not_exist <- function(url, file_name) {
+  if (!file.exists(file_name)) {
+    download.file(url, destfile = file_name, method = "auto")
+  }
+}
+
+# Retrieve data from ClinVar
+variant_summary_fn = "data/variant_summary.txt.gz"
+variant_allele_fn = "data/variant_allele.txt.gz"
+
+download_if_not_exist(
+  url = "https://ftp.ncbi.nlm.nih.gov/pub/clinvar/tab_delimited/variant_summary.txt.gz",
+  file_name = variant_summary_fn
+)
+
+download_if_not_exist(
+  url = "https://ftp.ncbi.nlm.nih.gov/pub/clinvar/tab_delimited/variation_allele.txt.gz",
+  file_name = variant_allele_fn
+)
+
+var_sum <- read.delim(variant_summary_fn)
+var_all <- read.delim(
+  variant_allele_fn,
+  comment.char = '#',
+  header = FALSE,
+  col.names = c(
+      "VariationID",
+      "Type",
+      "AlleleID",
+      "Interpreted"
+  )
+)
+
 # Helper function to sample from fields
 sample_field <- function(name, num = 1) sample(field_values[[name]], num)
 
@@ -35,7 +73,7 @@ gen_uuid <- function() {
     paste(sample(c(letters[1:6], 0:9), n, replace = TRUE), collapse = "")
   }
   paste(
-    alphanum(8), "-", alphanum(4), "-4", alphanum(3), "-", 
+    alphanum(8), "-", alphanum(4), "-4", alphanum(3), "-",
     sample(c("8", "9", "a", "b"), 1), alphanum(3), "-", alphanum(12),
     collapse = "", sep = ""
   )
@@ -109,46 +147,27 @@ gen_dates <- function() {
   )
 }
 
-# Generate mock variants
-# TODO: Future iterations could sample from Clinvar instead
-# TODO: Implement, indels, duplications, deletions, etc
-gen_var <- function(gene, amount = 1) {
-  cds <- gene_info[gene, "coding"]
-  pos <- sample(nchar(cds), amount)
-  from <- sapply(pos, \(p) substr(cds, p, p))
-  to <- sapply(from, \(fr) sample(setdiff(c("A", "C", "G", "T"), fr), 1))
-  data.frame(pos = pos, from = from, to = as.vector(to))
-}
-
-# Generate HGVS identifiers for variants
-gen_hgvs <- function(var_data, gene) {
-  b <- new.hgvs.builder.c()
-  hgvsc <- sapply(seq_len(nrow(var_data)), \(i) {
-    with(var_data[i, ], {
-      b$substitution(pos, from, to)
-    })
-  })
-  b <- new.hgvs.builder.g()
-  # FIXME: Edit this function to calculate the correct genomic position 
-  # with exon structure taken into account
-  hgvsg <- sapply(seq_len(nrow(var_data)), \(i) {
-    with(var_data[i, ], {
-      b$substitution(gene_info[gene, "start_position"] + pos - 1, from, to)
-    })
-  })
-  cds_seq <- gene_info[gene, "coding"]
-  hgvs <- do.call(rbind,lapply(hgvsc, \(.hgvsc) translateHGVS(.hgvsc,cds_seq)))
-  hgvs <- cbind(hgvsg=hgvsg,hgvs)
-  hgvs
-}
-
-# Generate VCV accessions
-gen_vcv <- function(amount=1) {
-  #[SRV]CV[A-Z0-9]{9}
-  replicate(amount, {
-    paste0("VCV00", paste0(sample(10, 7, replace = TRUE) - 1, collapse = ""))
-  })
-}
+# # Generate HGVS identifiers for variants
+# gen_hgvs <- function(var_data, gene) {
+#   b <- new.hgvs.builder.c()
+#   hgvsc <- sapply(seq_len(nrow(var_data)), \(i) {
+#     with(var_data[i, ], {
+#       b$substitution(pos, from, to)
+#     })
+#   })
+#   b <- new.hgvs.builder.g()
+#   # FIXME: Edit this function to calculate the correct genomic position
+#   # with exon structure taken into account
+#   hgvsg <- sapply(seq_len(nrow(var_data)), \(i) {
+#     with(var_data[i, ], {
+#       b$substitution(gene_info[gene, "start_position"] + pos - 1, from, to)
+#     })
+#   })
+#   cds_seq <- gene_info[gene, "coding"]
+#   hgvs <- do.call(rbind,lapply(hgvsc, \(.hgvsc) translateHGVS(.hgvsc,cds_seq)))
+#   hgvs <- cbind(hgvsg=hgvsg,hgvs)
+#   hgvs
+# }
 
 # Declare external_gene_name as a global variable to avoid binding warnings
 globalVariables(c("external_gene_name"))
@@ -179,89 +198,106 @@ find_exon_number <- function(chromosome, hgvsg, gene_symbol, exons_df) {
 }
 
 
-get_type <- function(hgvsp) {
-  # Parse HGVS protein change to determine type
-  if (grepl("fs", hgvsp)) {
-    return("frameshift")
-  } else if (grepl("Ter", hgvsp)) {
-    return("nonsense")
-  } else if (grepl("=", hgvsp)) {
-    return("synonymous")
-  } else {
-    return("missense")
-  }
-}
+get_clinvar <- function(df) {
 
-gen_mega_hgvs <- function(transcript_id, gene_symbol, hgvsc, hgvsp, zygosity) {
-  # Generate a comprehensive HGVS string for the variant
-  paste0(
-    transcript_id, "(", gene_symbol, "):[",
-    hgvsc, "(", hgvsp, ")]:[",
-    switch(zygosity,
-      homozygous = paste0(hgvsc, "(", hgvsp, ")"),
-      heterozygous = "="
-    ),
-    "]"
+  data <- list()
+  data$variant_id <- sprintf("VCV%09d", as.integer(df$VariationID))
+  data$chromosome <- paste0("chr", df$Chromosome)
+  data$type <- df$Type
+  data$interpretation <- df$ClinicalSignificance
+
+  res <- str_match(
+      df$Name,
+      # TranscriptID(GeneSymbol):VariantString (Protein)
+      regex("([^(^)]*).*:([^(^)^ ]*)\\s*(?:\\((.*)\\))?")
   )
+
+  data$mega_hgvs <- df$Name
+  data$transcript_id <- res[2]
+  data$hgvsc <- res[3]
+
+  if (!is.na(res[4])) {
+    data$hgvsp <- res[4]
+  }
+  else {
+    data$hgvsp <- "No protein change"
+  }
+
+  # Not sure if this exactly relates to zygosity
+  entry_allele <- var_all[var_all$AlleleID == as.integer(df$X.AlleleID),]
+  data$zygosity <- entry_allele$Type
+
+  return(data)
 }
 
 
 #Sample random variants
-sample_variants <- function(genes) {
+sample_variants <- function(gene_symbols) {
+
+  selected <- sample(gene_symbols, 1L)
   num_variants <- max(1, rpois(1, 1))
-  replicate(num_variants, {
-    data <- list()
-    data$gene_symbol <- sample(genes, 1L)
-    data$variant_id <- gen_vcv()
-    data$chromosome <- paste0("chr", 
-      gene_info[data$gene_symbol, "chromosome_name"]
-    )
-    var_data <- gen_var(data$gene_symbol)
-    hgvs <- gen_hgvs(var_data, data$gene_symbol)
-    data <- c(data, hgvs[, 1:3])
-    data$type <- get_type(data$hgvsp)
-    # TODO: Add aapos, fromAA, toAA
-    data$transcript_id <- gene_info[data$gene_symbol, "refseq_mrna"]
+  sub_var <- head(var_sum[var_sum$GeneSymbol == selected,], n = num_variants)
 
-    # Handle exon assignment with safe checking
-    if (is.null(data$exon) || length(data$exon) == 0 || is.na(data$exon)) {
-      # Try to get exon from gene_info, with fallback to random number
-      rank_data <- gene_info[data$gene_symbol, "rank"]
-      if (!is.na(rank_data) && rank_data != "") {
-        data$exon <- sample(strsplit(rank_data, ";")[[1]], 1)
-      } else {
-        data$exon <- sample(1:20, 1)
+  # Lots of weird dataframe transformations here! I wasn't sure exactly how
+  # to coerce the data to fit the JSON format, anyone that is more proficient
+  # at R than I am, feel free to optimize these calls
+  bound <- do.call("rbind", apply(
+    sub_var,
+    MARGIN = 1,
+    FUN = function(row) {
+
+      df <- as.data.frame(t(row))
+
+      data <- list()
+      data$gene_symbol <- selected
+
+      # TODO: Add aapos, fromAA, toAA
+      # data$transcript_id <- gene_info[data$gene_symbol, "refseq_mrna"]
+
+      # Handle exon assignment with safe checking
+      if (is.null(data$exon) || length(data$exon) == 0 || is.na(data$exon)) {
+        # Try to get exon from gene_info, with fallback to random number
+        rank_data <- gene_info[data$gene_symbol, "rank"]
+        if (!is.na(rank_data) && rank_data != "") {
+          data$exon <- sample(strsplit(rank_data, ";")[[1]], 1)
+        } else {
+          data$exon <- sample(1:20, 1)
+        }
       }
-    }
 
-    data$zygosity <- sample(
-      field_values$zygosity, 1,
-      prob = c(.8, .2)
-    )
-    data$interpretation <- sample(
-      field_values$interpretation, 1,
-      prob = c(.6, .3, .1)
-    )
-    maf <- gen_maf(1)[1, , drop = TRUE]
-    data$mafac <- maf$ac
-    data$mafan <- maf$an
-    data$mafaf <- maf$af
-    data$mega_hgvs <- with(data, gen_mega_hgvs(
-      transcript_id, gene_symbol, hgvsc, hgvsp, zygosity
-    ))
-    data
-  }, simplify = FALSE)
+      data <- merge(data, get_clinvar(df))
+
+      # TODO: Get allele frequency from GMAF
+      maf <- gen_maf(1)[1, , drop = TRUE]
+      data$mafac <- maf$ac
+      data$mafan <- maf$an
+      data$mafaf <- maf$af
+
+      data
+    }
+  ))
+
+  df <- transpose(bound)
+  rownames(df) <- colnames(bound)
+  t(df)
 }
 
 gen_genes <- function() {
-  gene_symbols <- sample_field("genes", round(runif(1, 5, 20)))
-  refseq_accs <- gene_info[gene_symbols, "refseq_mrna"]
-  mapply(
-    \(s, a) list(gene_symbol = s, refseq_mrna = a),
-    gene_symbols,
-    refseq_accs,
-    SIMPLIFY = FALSE
+  available_genes = unique(
+    var_sum[
+      grepl("^[a-zA-Z0-9]*$", var_sum$GeneSymbol),
+    ]$GeneSymbol
   )
+
+  sample(available_genes, round(runif(1, 5, 20)))
+
+  # refseq_accs <- gene_info[gene_symbols, "refseq_mrna"]
+  # mapply(
+  #   \(s, a) list(gene_symbol = s, refseq_mrna = a),
+  #   gene_symbols,
+  #   refseq_accs,
+  #   SIMPLIFY = FALSE
+  # )
 }
 
 # report_date"
@@ -297,7 +333,7 @@ generate_mockup <- function() {
   data$num_tested_genes <- length(data$tested_genes)
   data$sample_type <- sample_field("sample_types")
   data$analysis_type <- sample_field("analysis_types")
-  data$variants <- sample_variants(names(data$tested_genes))
+  data$variants <- sample_variants(data$tested_genes)
   data$num_variants <- length(data$variants)
   rgs <- field_values$reference_genomes
   # Assign multinomial probabilites based on number of entries
