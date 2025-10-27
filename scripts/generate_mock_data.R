@@ -27,42 +27,8 @@ out_file <- args$outfile
 #Load source data
 field_values <- yaml.load_file("data/field_values.yml")
 gene_info <- read.csv("data/gene_info.csv", row.names = 1)
+var_info <- read.csv("data/var_info.csv")
 exons_df <- read.csv("data/exon_info.csv", stringsAsFactors = FALSE)
-
-# Download file if it doesn't exist
-# Used for larger files
-download_if_not_exist <- function(url, file_name) {
-  if (!file.exists(file_name)) {
-    download.file(url, destfile = file_name, method = "auto")
-  }
-}
-
-# Retrieve data from ClinVar
-variant_summary_fn = "data/variant_summary.txt.gz"
-variant_allele_fn = "data/variant_allele.txt.gz"
-
-download_if_not_exist(
-  url = "https://ftp.ncbi.nlm.nih.gov/pub/clinvar/tab_delimited/variant_summary.txt.gz",
-  file_name = variant_summary_fn
-)
-
-download_if_not_exist(
-  url = "https://ftp.ncbi.nlm.nih.gov/pub/clinvar/tab_delimited/variation_allele.txt.gz",
-  file_name = variant_allele_fn
-)
-
-var_sum <- read.delim(variant_summary_fn)
-var_all <- read.delim(
-  variant_allele_fn,
-  comment.char = '#',
-  header = FALSE,
-  col.names = c(
-      "VariationID",
-      "Type",
-      "AlleleID",
-      "Interpreted"
-  )
-)
 
 # Helper function to sample from fields
 sample_field <- function(name, num = 1) sample(field_values[[name]], num)
@@ -114,21 +80,21 @@ rpow <- function(n, alpha = 1000, range = 5e5) {
   return(samples_out)
 }
 
-# generate allele frequency, count and number
-gen_maf <- function(amount = 1, max_pop = 5e5) {
-  # sample allele number from normal distribution
-  an <- round(rnorm(amount, mean = max_pop, sd = max_pop / 5))
-  # sample allele count from power-law distribution
-  ac <- round(rpow(amount, alpha = 1000, range = max_pop))
-  # restrict allele count to be ranged between 0 and an, enrich zeroes
-  ac <- mapply(\(a, n) {
-    min(n, max(0, a))
-    # ifelse(a > n, n, ifelse(a < 0, 0, a)
-  }, ac - 100, an)
-  #calculate allele frequency
-  af <- ac / an
-  return(data.frame(ac = ac, an = an, af = af))
-}
+# # generate allele frequency, count and number
+# gen_maf <- function(amount = 1, max_pop = 5e5) {
+#   # sample allele number from normal distribution
+#   an <- round(rnorm(amount, mean = max_pop, sd = max_pop / 5))
+#   # sample allele count from power-law distribution
+#   ac <- round(rpow(amount, alpha = 1000, range = max_pop))
+#   # restrict allele count to be ranged between 0 and an, enrich zeroes
+#   ac <- mapply(\(a, n) {
+#     min(n, max(0, a))
+#     # ifelse(a > n, n, ifelse(a < 0, 0, a)
+#   }, ac - 100, an)
+#   #calculate allele frequency
+#   af <- ac / an
+#   return(data.frame(ac = ac, an = an, af = af))
+# }
 
 # Generate a set of threee dates (collected, received, verified)
 gen_dates <- function() {
@@ -201,7 +167,7 @@ find_exon_number <- function(chromosome, hgvsg, gene_symbol, exons_df) {
 get_clinvar <- function(df) {
 
   data <- list()
-  data$variant_id <- sprintf("VCV%09d", as.integer(df$VariationID))
+  data$variant_id <- df$VariationID
   data$chromosome <- paste0("chr", df$Chromosome)
   data$type <- df$Type
   data$interpretation <- df$ClinicalSignificance
@@ -223,36 +189,37 @@ get_clinvar <- function(df) {
     data$hgvsp <- "No protein change"
   }
 
-  # Not sure if this exactly relates to zygosity
-  entry_allele <- var_all[var_all$AlleleID == as.integer(df$X.AlleleID),]
-  data$zygosity <- entry_allele$Type
+  data$zygosity <- sample(
+    field_values$zygosity, 1,
+    prob = c(.8, .2)
+  )
 
   return(data)
 }
 
 
 #Sample random variants
-sample_variants <- function(gene_symbols) {
+sample_variants <- function(genes) {
 
-  selected <- sample(gene_symbols, 1L)
-  num_variants <- max(1, rpois(1, 1))
-  sub_var <- head(var_sum[var_sum$GeneSymbol == selected,], n = num_variants)
+  selected <- sample(genes, 1L)
+  subset <- var_info[var_info$GeneSymbol == selected,]
 
-  # Lots of weird dataframe transformations here! I wasn't sure exactly how
-  # to coerce the data to fit the JSON format, anyone that is more proficient
-  # at R than I am, feel free to optimize these calls
-  bound <- do.call("rbind", apply(
-    sub_var,
-    MARGIN = 1,
-    FUN = function(row) {
+  # Sample variants based on biological probability
+  # The number of variants are chosen (poisson) randomly between 1 and 2
+  var_idx <- sample(
+    rownames(subset),
+    size = max(1, rpois(1, 1)),
+    prob = subset$minor_allele_freq
+  )
 
-      df <- as.data.frame(t(row))
+  # Improved call
+  df <- sapply(
+    seq_len(length(var_idx)),
+    \(row) {
+      df <- subset[row,]
 
       data <- list()
       data$gene_symbol <- selected
-
-      # TODO: Add aapos, fromAA, toAA
-      # data$transcript_id <- gene_info[data$gene_symbol, "refseq_mrna"]
 
       # Handle exon assignment with safe checking
       if (is.null(data$exon) || length(data$exon) == 0 || is.na(data$exon)) {
@@ -265,39 +232,29 @@ sample_variants <- function(gene_symbols) {
         }
       }
 
-      data <- merge(data, get_clinvar(df))
+      data$mafac <- df$minor_allele_count
+      data$mafaf <- df$minor_allele_freq
+      data$mafan <- data$mafac / data$mafaf
 
-      # TODO: Get allele frequency from GMAF
-      maf <- gen_maf(1)[1, , drop = TRUE]
-      data$mafac <- maf$ac
-      data$mafan <- maf$an
-      data$mafaf <- maf$af
+      data <- merge(data, get_clinvar(df))
 
       data
     }
-  ))
+  )
 
-  df <- transpose(bound)
-  rownames(df) <- colnames(bound)
+  # Must be transposed to fit into JSON format
   t(df)
 }
 
 gen_genes <- function() {
-  available_genes = unique(
-    var_sum[
-      grepl("^[a-zA-Z0-9]*$", var_sum$GeneSymbol),
-    ]$GeneSymbol
+  gene_symbols <- sample_field("genes", round(runif(1, 5, 20)))
+  refseq_accs <- gene_info[gene_symbols, "refseq_mrna"]
+  mapply(
+    \(s, a) list(gene_symbol = s, refseq_mrna = a),
+    gene_symbols,
+    refseq_accs,
+    SIMPLIFY = FALSE
   )
-
-  sample(available_genes, round(runif(1, 5, 20)))
-
-  # refseq_accs <- gene_info[gene_symbols, "refseq_mrna"]
-  # mapply(
-  #   \(s, a) list(gene_symbol = s, refseq_mrna = a),
-  #   gene_symbols,
-  #   refseq_accs,
-  #   SIMPLIFY = FALSE
-  # )
 }
 
 # report_date"
@@ -333,7 +290,7 @@ generate_mockup <- function() {
   data$num_tested_genes <- length(data$tested_genes)
   data$sample_type <- sample_field("sample_types")
   data$analysis_type <- sample_field("analysis_types")
-  data$variants <- sample_variants(data$tested_genes)
+  data$variants <- sample_variants(names(data$tested_genes))
   data$num_variants <- length(data$variants)
   rgs <- field_values$reference_genomes
   # Assign multinomial probabilites based on number of entries

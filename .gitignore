@@ -15,5 +15,5 @@ out/
 /*.pdf
 /*.tex
 
-# ClinVar files
-/data/*.txt.gz
+# Downloaded data
+data/var_info.csv

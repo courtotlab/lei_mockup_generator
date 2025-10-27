@@ -4,14 +4,13 @@ library(yaml)
 library(biomaRt)
 library(httr)
 library(RJSONIO)
-options(timeout=180)
+library(readr)
+options(timeout=1500)
 #get gene list from field values
 gene_table <- yaml.load_file("data/field_values.yml")
 
 #query biomart for genes
-
-
-get_connections <- function(){
+get_connections <- function(biomart, dataset) {
   mirrors <- c(
     "https://useast.ensembl.org",
     "https://www.ensembl.org",
@@ -20,7 +19,7 @@ get_connections <- function(){
   )
   connections <- lapply(mirrors, function(mirror) {
     tryCatch({
-      useMart("ensembl", dataset = "hsapiens_gene_ensembl", host = mirror)
+      useEnsembl(biomart = biomart, dataset = dataset, host = mirror)
     }, error = function(e) {
       message(paste("Failed to connect to", mirror, ":", e$message))
       NULL
@@ -33,15 +32,21 @@ get_connections <- function(){
   return(connections)
 }
 
-ensembl_connections <- tryCatch(get_connections(), error = function(e) NULL)
+fetch_ensembl <- function(biomart, dataset){
+  ensembl_connections <- tryCatch(get_connections(biomart, dataset), error = function(e) NULL)
 
-if (is.null(ensembl_connections) || length(ensembl_connections) == 0) {
-  stop("All Ensembl mirror connections failed. Try again later.")
+  if (is.null(ensembl_connections) || length(ensembl_connections) == 0) {
+    stop("All Ensembl mirror connections failed. Try again later.")
+  }
+  ensembl <- ensembl_connections[[1]]
+  return(ensembl)
 }
-ensembl <- ensembl_connections[[1]]
 
-results <- getBM(
+gene_ensembl <- fetch_ensembl("genes", "hsapiens_gene_ensembl")
+
+gene_results <- getBM(
   attributes = c(
+    "ensembl_gene_id",
     "external_gene_name",
     "refseq_mrna",
     "transcript_is_canonical",
@@ -52,36 +57,37 @@ results <- getBM(
   ),
   filters = "external_gene_name",
   values = gene_table$genes,
-  mart = ensembl
+  mart = gene_ensembl
 )
 
 
 #filter out non-canonical transcripts and empty values
-results_filtered <- results[which(
-  results$transcript_is_canonical == 1 &
-    results$coding != "Sequence unavailable" &
-    !is.na(results$chromosome_name)
+filtered_genes <- gene_results[which(
+  gene_results$transcript_is_canonical == 1 &
+    gene_results$coding != "Sequence unavailable" &
+    !is.na(gene_results$chromosome_name)
 ), ]
 #filter out duplicates
-results_filtered <- results_filtered[
-  !duplicated(results_filtered$external_gene_name),
+filtered_genes <- filtered_genes[
+  !duplicated(filtered_genes$external_gene_name),
 ]
 
 #re-order table columns
-results_filtered <- results_filtered[, c(
+filtered_genes <- filtered_genes[, c(
+  "ensembl_gene_id",
   "external_gene_name", "refseq_mrna",
   "chromosome_name", "start_position",
-  "coding", "rank" #rank = exon numbers 
+  "coding", "rank" #rank = exon numbers
 )]
 
-# Check transcript IDs against entrez e-utils to get version code 
+# Check transcript IDs against entrez e-utils to get version code
 # and resolve cases with multiple IDs
 counter <- 1
 base_url <- "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esummary.fcgi"
-strsplit(results_filtered$refseq_mrna, ";") |> lapply(\(nms) {
+strsplit(filtered_genes$refseq_mrna, ";") |> lapply(\(nms) {
   nm_str <- paste0(nms, collapse = ",")
   url <- paste0(base_url, "?db=nuccore&id=", nm_str, "&retmode=json")
-  cat("Processing ", results_filtered[counter, "external_gene_name"], "\n")
+  cat("Processing ", filtered_genes[counter, "external_gene_name"], "\n")
   #sleep 300ms per iteration, to not stress out the eutils API
   Sys.sleep(0.3)
   response <- GET(url)
@@ -103,15 +109,54 @@ strsplit(results_filtered$refseq_mrna, ";") |> lapply(\(nms) {
 }) -> refseq_accessions
 
 #fix entries with contig names as chromosomes and update transcripts
-results_final <- results_filtered
-results_final$chromosome_name <- 
-  gsub("^HSCHR|_.+$", "", results_filtered$chromosome_name)
+results_final <- filtered_genes
+results_final$chromosome_name <-
+  gsub("^HSCHR|_.+$", "", filtered_genes$chromosome_name)
 results_final$refseq_mrna <- do.call(c, refseq_accessions)
 # write result to file
 write.csv(results_final, "data/gene_info.csv", row.names = FALSE)
 #write.csv(exons_filtered, "data/exon_info.csv", row.names = FALSE)
-paste("Gene info, exon info, saved to 
+paste("Gene info, exon info, saved to
 data/gene_info.csv",
       sep = "\n") |> cat()
+
+
+# Fetch variant information from ClinVar FTP
+clinvar <- read_tsv(
+  "https://ftp.ncbi.nlm.nih.gov/pub/clinvar/tab_delimited/variant_summary.txt.gz",
+  show_col_types = FALSE
+)
+
+# Filter by matching gene name
+clinvar <- clinvar[clinvar$GeneSymbol %in% results_final$external_gene_name,]
+# Derive variation ID from integer to string
+clinvar$VariationID <- sprintf("VCV%09d", as.integer(clinvar$VariationID))
+
+snp_ensembl <- fetch_ensembl("snp", "hsapiens_snp")
+snp_results <- getBM(
+  attributes = c(
+    "synonym_name",
+    "minor_allele_freq",
+    "minor_allele_count"
+  ),
+  filters = c("variation_synonym_source", "snp_synonym_filter"),
+  values = list("ClinVar", clinvar$VariationID),
+  mart = snp_ensembl
+)
+
+variants_merged <- merge(
+  clinvar,
+  snp_results,
+  by.x = "VariationID",
+  by.y = "synonym_name"
+)
+
+# Fill unknown minor allele frequencies with default 1 in 100 million
+na_idx <- is.na(variants_merged$minor_allele_freq)
+variants_merged$minor_allele_freq[na_idx] <- 1e-8
+variants_merged$minor_allele_count[na_idx] <- 1
+
+write.csv(variants_merged, "data/var_info.csv", row.names = FALSE)
+paste("ClinVar variant info saved to data/var_info.csv", sep = "\n") |> cat()
 
 #The generated csv file is short 43 genes, which were added in a new commit

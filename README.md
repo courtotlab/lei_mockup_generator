@@ -13,7 +13,7 @@ Here we generate mockup clinical report PDFs to be used for evaluating clinical 
   3. `templates/` contains LaTeX templates for different report styles.
 
 ## Requirements:
-R>=4.5, with the following packages installed: `argparser`, `biomaRt`, `hgvsParseR`, `httr`, `RJSONIO`, `yaml`, `hash`, `stringr`, `data.table`
+R>=4.5, with the following packages installed: `argparser`, `biomaRt`, `hgvsParseR`, `httr`, `RJSONIO`, `yaml`, `hash`, `stringr`, `data.table`, `readr`
 
 Installation of LaTeX
 
