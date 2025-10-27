@@ -214,7 +214,7 @@ sample_variants <- function(genes) {
 
   # Improved call
   df <- sapply(
-    seq_len(length(var_idx)),
+    var_idx,
     \(row) {
       df <- subset[row,]
 
