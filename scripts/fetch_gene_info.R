@@ -156,6 +156,37 @@ na_idx <- is.na(variants_merged$minor_allele_freq)
 variants_merged$minor_allele_freq[na_idx] <- 1e-8
 variants_merged$minor_allele_count[na_idx] <- 1
 
+# Clinical significance likelihoods
+# Takes worst case of multiple reports
+# > If marked as "pathogenic/likely pathogenic", assume pathogenic
+determine_clinsig <- function(clinsig) {
+
+  clinsig_prob <- function(report) {
+    if (grepl("^pathogenic", report, ignore.case = TRUE)) {
+      return(0.99)
+    } else if (grepl("^likely pathogenic", report, ignore.case = TRUE)) {
+      return(0.9)
+    } else if (grepl("^likely benign", report, ignore.case = TRUE)) {
+      return(0.1)
+    } else if (grepl("^benign", report, ignore.case = TRUE)) {
+      return(0.01)
+    } else {
+      # Catch-all
+      return(0.5)
+    }
+  }
+
+  # Multiple reports are separated by a slash
+  # Compute the max probability
+  reports <- strsplit(clinsig, "/")[[1]]
+  max(sapply(reports, clinsig_prob))
+}
+
+variants_merged$ClinicalProbability <- sapply(
+  variants_merged$ClinicalSignificance,
+  determine_clinsig
+)
+
 write.csv(variants_merged, "data/var_info.csv", row.names = FALSE)
 paste("ClinVar variant info saved to data/var_info.csv", sep = "\n") |> cat()
 

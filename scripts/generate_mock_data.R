@@ -161,17 +161,18 @@ get_clinvar <- function(df) {
 #Sample random variants
 sample_variants <- function(genes, patient_var) {
 
-  selected <- sample(genes, 1L)
-  subset <- patient_var[patient_var$GeneSymbol == selected,]
+  subset <- patient_var[patient_var$GeneSymbol %in% genes,]
+  num_variants <- max(1, rpois(1, 1))
+  sub_idx <- sample(rownames(subset), num_variants)
 
   # Improved call
   df <- sapply(
-    rownames(subset),
+    sub_idx,
     \(row) {
       df <- subset[row,]
 
       data <- list()
-      data$gene_symbol <- selected
+      data$gene_symbol <- df$GeneSymbol
 
       # Handle exon assignment with safe checking
       if (is.null(data$exon) || length(data$exon) == 0 || is.na(data$exon)) {
@@ -200,18 +201,13 @@ sample_variants <- function(genes, patient_var) {
 }
 
 gen_patient_variants <- function() {
-
-  # Lambda for Poisson -> sum of all MAF
-  num_variants <- rpois(1, sum(var_info$minor_allele_freq))
-
-  # This index contains all variants that are present in patient
-  # Sample variants based on biological probability
-  var_idx <- sample(
-    rownames(var_info),
-    size = num_variants,
-    prob = var_info$minor_allele_freq
-  )
-  var_info[var_idx,]
+  # Repeated Bernoulli test
+  # Draw from uniform distribution -> is the MAF * clinical significance greater
+  # than the uniform random variable that was drawn?
+  var_info[
+    var_info$minor_allele_freq * var_info$ClinicalProbability >
+    runif(nrow(var_info)),
+  ]
 }
 
 gen_genes <- function(variants) {
