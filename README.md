@@ -23,11 +23,17 @@ Here we generate mockup clinical report PDFs to be used for evaluating clinical 
   * ImageMagick >= v7.1
 
 ## Usage:
+Running the full workflow:
+```bash
+$ bash scripts/run.sh --amount 10 --outdir ./
+```
+
+Running the individual steps manually:
 ```bash
 # generate 10 sets of mockup data
 $ Rscript scripts/generate_mock_data.R --amount 1 --outfile mock_data.json
-# interpolate the mockup data into the CHEO template
-$ Rscript scripts/interpolate.R templates/CHEO_template.tex mock_data.json --outprefix CHEO
+# interpolate the mockup data into their templates
+$ Rscript scripts/interpolate.R mock_data.json 
 # Turn the interpolated .tex file into a pdf
-$ pdflatex CHEO_2b73a56c-79c9-49f0-b564-684245be1717.tex
+$ pdflatex "report_<insert-id-here>.tex"
 ```

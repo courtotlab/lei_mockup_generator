@@ -233,7 +233,7 @@ parse_template <- function(template_file) {
 
 #load override template if one was provided
 if (!is.na(args$template_file)) {
-  tmpl_struc <- parse_template(tmpl_file)
+  tmpl_struc <- parse_template(args$template_file)
   text_sections <- tmpl_struc$text_sections
   section_fields <- tmpl_struc$section_fields
 }
