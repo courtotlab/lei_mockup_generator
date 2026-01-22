@@ -32,19 +32,37 @@ get_connections <- function(biomart, dataset) {
   return(connections)
 }
 
-fetch_ensembl <- function(biomart, dataset){
-  ensembl_connections <- tryCatch(get_connections(biomart, dataset), error = function(e) NULL)
+# Tries remaining valid mirrors and skips if any other error occurs
+fetch_gene_results <- function(biomart, dataset, attributes, filters, values) {
+  connections <- get_connections(biomart, dataset)
 
-  if (is.null(ensembl_connections) || length(ensembl_connections) == 0) {
-    stop("All Ensembl mirror connections failed. Try again later.")
+  for (conn in connections) {
+    message(paste("Trying query on", conn@host))
+
+    result <- tryCatch({
+      getBM(
+        attributes = attributes,
+        filters = filters,
+        values = values,
+        mart = conn
+      )
+    }, error = function(e) {
+      message(paste("Query failed on", conn@host, ":", e$message))
+      NULL
+    })
+
+    if (!is.null(result)) {
+      return(result)  # stop at first successful mirror
+    }
   }
-  ensembl <- ensembl_connections[[1]]
-  return(ensembl)
+
+  stop("All Ensembl mirrors failed during query execution.")
 }
 
-gene_ensembl <- fetch_ensembl("genes", "hsapiens_gene_ensembl")
 
-gene_results <- getBM(
+gene_results <- fetch_gene_results(
+  biomart = "genes",
+  dataset = "hsapiens_gene_ensembl",
   attributes = c(
     "ensembl_gene_id",
     "external_gene_name",
@@ -56,8 +74,7 @@ gene_results <- getBM(
     "rank"
   ),
   filters = "external_gene_name",
-  values = gene_table$genes,
-  mart = gene_ensembl
+  values = gene_table$genes
 )
 
 
@@ -131,17 +148,19 @@ clinvar <- read_tsv(
 clinvar <- clinvar[clinvar$GeneSymbol %in% results_final$external_gene_name,]
 # Derive variation ID from integer to string
 clinvar$VariationID <- sprintf("VCV%09d", as.integer(clinvar$VariationID))
+]
 
-snp_ensembl <- fetch_ensembl("snp", "hsapiens_snp")
-snp_results <- getBM(
+# Use fetch_gene_results instead
+snp_results <- fetch_gene_results(
+  biomart = "snp",
+  dataset = "hsapiens_snp",
   attributes = c(
     "synonym_name",
     "minor_allele_freq",
     "minor_allele_count"
   ),
   filters = c("variation_synonym_source", "snp_synonym_filter"),
-  values = list("ClinVar", clinvar$VariationID),
-  mart = snp_ensembl
+  values = list("ClinVar", clinvar$VariationID)
 )
 
 variants_merged <- merge(
