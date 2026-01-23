@@ -148,7 +148,7 @@ clinvar <- read_tsv(
 clinvar <- clinvar[clinvar$GeneSymbol %in% results_final$external_gene_name,]
 # Derive variation ID from integer to string
 clinvar$VariationID <- sprintf("VCV%09d", as.integer(clinvar$VariationID))
-]
+
 
 # Use fetch_gene_results instead
 snp_results <- fetch_gene_results(
