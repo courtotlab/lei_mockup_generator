@@ -7,3 +7,13 @@ out/*
 .pixi
 *.egg-info
 out/
+
+# TeX files
+# Only seeks root folder
+/*.aux
+/*.log
+/*.pdf
+/*.tex
+
+# Downloaded data
+data/var_info.csv

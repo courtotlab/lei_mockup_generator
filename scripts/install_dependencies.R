@@ -8,7 +8,7 @@ repo <- "https://cloud.r-project.org/"
 
 #"normal" packages
 install.packages(
-  c("httr", "argparser", "RJSONIO", "yaml", "hash"),
+  c("httr", "argparser", "RJSONIO", "yaml", "hash", "stringr", "data.table", "readr"),
   repos = repo
 )
 

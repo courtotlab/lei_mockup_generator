@@ -2,10 +2,10 @@
 
 Here we generate mockup clinical report PDFs to be used for evaluating clinical data extraction tools.
 
-## Structure: 
+## Structure:
   1. `scripts/` contains the following R scripts:
-     * `fetch_gene_info.R` : Generates `data/gene_info.csv`. Uses web-services to pull location data, transcripts and sequence data for a list of genes. 
-     * `generate_mock_data.R` : Generates mockup data in `json` format. 
+     * `fetch_gene_info.R` : Generates `data/gene_info.csv`. Uses web-services to pull location data, transcripts and sequence data for a list of genes.
+     * `generate_mock_data.R` : Generates mockup data in `json` format.
      * `interpolate.R` : Interpolates the mockup data into LaTeX templates.
      * `run.sh` : Executes the full workflow
   2. `data/` contains source data for mockup generation:
@@ -16,7 +16,7 @@ Here we generate mockup clinical report PDFs to be used for evaluating clinical 
   3. `templates/` contains LaTeX templates for different report styles. Each `.tex` file should also be associated with an R-plugin file in the same folder.
 
 ## Requirements:
-  * R>=4.5, with the following packages installed: `argparser`, `biomaRt`, `hgvsParseR`, `httr`, `RJSONIO`, `yaml`, `hash`
+  * R>=4.5, with the following packages installed: `argparser`, `biomaRt`, `hgvsParseR`, `httr`, `RJSONIO`, `yaml`, `hash`, `stringr`, `data.table`, `readr`
     * To install hgvsParseR, use `remotes::install_github("VariantEffect/hgvsParseR")`
   * LaTeX / TeXLive / TinyTeX
     * If you use TinyTeX, you need to install `tex-gyre` and `draftwatermark` explicitly via: `tlmgr install tex-gyre draftwatermark`
@@ -32,8 +32,8 @@ Running the individual steps manually:
 ```bash
 # generate 10 sets of mockup data
 $ Rscript scripts/generate_mock_data.R --amount 1 --outfile mock_data.json
-# interpolate the mockup data into their templates
-$ Rscript scripts/interpolate.R mock_data.json 
+# interpolate the mockup data into the CHEO template
+$ Rscript scripts/interpolate.R --template_file templates/CHEO_template.tex mock_data.json --outprefix CHEO
 # Turn the interpolated .tex file into a pdf
 $ pdflatex "report_<insert-id-here>.tex"
 ```
