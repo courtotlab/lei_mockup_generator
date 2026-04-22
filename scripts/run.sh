@@ -26,6 +26,9 @@ die () {
   exit 1
 }
 
+#infer the directory of where this script (and thus hopefully 
+#the others we will be calling below) are located.
+SCRIPTDIR="$(dirname "$0")"
 
 #Parse Arguments
 PARAMS=""
@@ -88,20 +91,22 @@ DATA="$OUTDIR/mock_data.json"
 
 # Generate mock data using the AMOUNT variable
 echo "Generating mock data files..."
-Rscript scripts/generate_mock_data.R --amount "$AMOUNT" --outfile "$DATA"
+Rscript "${SCRIPTDIR}/generate_mock_data.R" --amount "$AMOUNT" --outfile "$DATA"
 
 # Run interpolate with the given template and generated data
 echo "Interpolating JSON files with template..."
-Rscript scripts/interpolate.R "$DATA" --outprefix "$OUTDIR/report"
+Rscript "${SCRIPTDIR}/interpolate.R" "$DATA" --outprefix "$OUTDIR/report"
 
 # Compile all generated .tex files into PDFs and clean up
 echo "Compiling LaTeX files into PDFs..."
 cd "$OUTDIR"
 for TEXFILE in report_*.tex; do
-  echo "Compiling $TEXFILE"
+  echo "Converting $TEXFILE to markdown"
+  pandoc -o "${TEXFILE%.tex}.md" "$TEXFILE"
+  echo "Compiling $TEXFILE to PDF"
   pdflatex -halt-on-error -interaction batchmode "$TEXFILE" && \
-  rm -f "${TEXFILE%.tex}.aux" "${TEXFILE%.tex}.log" "${TEXFILE%.tex}.tex" || \
-  die "Compilation failed. Check ${TEXFILE%.tex}.log for error message."
+    rm -f "${TEXFILE%.tex}.aux" "${TEXFILE%.tex}.log" "${TEXFILE%.tex}.tex" || \
+      die "Compilation failed. Check ${TEXFILE%.tex}.log for error message."
 done
 cd -
 
@@ -109,7 +114,7 @@ cd -
 echo "Distressing PDFs..."
 for PDF in "$OUTDIR"/report_*.pdf; do
   echo "Distressing $PDF"
-  scripts/simulate_copier.sh "$PDF"
+  "${SCRIPTDIR}/simulate_copier.sh" "$PDF"
 done
 
 echo "All done."
