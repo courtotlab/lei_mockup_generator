@@ -11,10 +11,11 @@ by Jochen Weile <jweile@oicr.on.ca> 2025
 
 This script generates a mock report using R scripts and LaTeX.
 
-Usage: run.sh [-a|--amount <INTEGER>] [-o|--outdir <DIR>] 
+Usage: run.sh [-a|--amount <INTEGER>] [-o|--outdir <DIR>] [-s|--seed <INTEGER>]
 
 -a|--amount : The number of mock data entries to generate (default: 10)
 -o|--outdir : The output directory where the reports will be saved (default: out/)
+-s|--seed   : An RNG seed to use (default: None)
 
 EOF
  exit $1
@@ -34,6 +35,7 @@ SCRIPTDIR="$(dirname "$0")"
 PARAMS=""
 OUTDIR="out/"
 AMOUNT=1
+SEED=""
 while (( "$#" )); do
   case "$1" in
     -h|--help)
@@ -51,6 +53,14 @@ while (( "$#" )); do
     -o|--outdir)
       if [ -n "$2" ] && [ ${2:0:1} != "-" ]; then
         OUTDIR="$2"
+        shift 2
+      else
+        die "ERROR: Argument for $1 is missing" 
+      fi
+      ;;
+    -s|--seed)
+      if [ -n "$2" ] && [ ${2:0:1} != "-" ]; then
+        SEED="$2"
         shift 2
       else
         die "ERROR: Argument for $1 is missing" 
@@ -85,13 +95,19 @@ if [[ -z $(which pdflatex) ]]; then
   die "LaTeX or TeXlive is not installed!"
 fi
 
+if [[ -n "$SEED" ]]; then
+  SEEDPARAM="--seed $SEED"
+else
+  SEEDPARAM=""
+fi
+
 echo "Output directory: $OUTDIR"
 mkdir -p "$OUTDIR"
 DATA="$OUTDIR/mock_data.json"
 
 # Generate mock data using the AMOUNT variable
 echo "Generating mock data files..."
-Rscript "${SCRIPTDIR}/generate_mock_data.R" --amount "$AMOUNT" --outfile "$DATA"
+Rscript "${SCRIPTDIR}/generate_mock_data.R" --amount "$AMOUNT" --outfile "$DATA" $SEEDPARAM
 
 # Run interpolate with the given template and generated data
 echo "Interpolating JSON files with template..."
