@@ -32,6 +32,10 @@ labs:
   - London Health Sciences Centre (London)
   - North York General Hospital (Toronto)
   - Sinai Health System (Toronto)
+  - Trillium Health Partners (Mississauga)
+  - University Health Network (Toronto)
+  - Ontario Cancer Hospital (Toronto)
+  - Toronto Cancer Hospital (Toronto)
 scopes:
   - Gene panel
   - Targeted variant testing

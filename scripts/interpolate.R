@@ -5,7 +5,7 @@ library(RJSONIO)
 library(yaml)
 library(hgvsParseR)
 
-#parse command line arguments
+# parse command line arguments
 ap <- arg_parser(
   "interpolate template with mockup values",
   name = "interpolate.R"
@@ -19,7 +19,7 @@ ap <- add_argument(ap,
 )
 ap <- add_argument(ap,
   "--template_file",
-  help = "override template file (.tex) to use instead of 
+  help = "override template file (.tex) to use instead of
           automatically chosen ones"
 )
 ap <- add_argument(ap,
@@ -58,7 +58,7 @@ if (!dir.exists(args$template_dir)) {
 }
 # Load the template registry
 templates <- unlist(read_yaml(paste0(data_dir, "/template_registry.yml")))
-#validate templates
+# validate templates
 tmpl_files <- names(templates) |>
   lapply(\(tmpl) {
     paste0(args$template_dir, "/", tmpl, c(".tex", "_plugin.R"))
@@ -78,8 +78,8 @@ if (!file.exists(args$json_file)) {
 }
 mock_data <- fromJSON(args$json_file)
 
-#if a static template was providedd, check that the template file 
-#exists and is a valid tex file
+# if a static template was provided, check that the template file
+# exists and is a valid tex file
 if (!is.na(args$template_file)) {
   if (!file.exists(args$template_file)) {
     stop("Template file does not exist: ", args$template_file)
@@ -99,24 +99,24 @@ match_template <- function(lab_name) {
   paste0(args$template_dir, "/", template, ".tex")
 }
 
-#capitalize a word ("hello" -> "Hello")
+# capitalize a word ("hello" -> "Hello")
 cap <- function(txt) {
   substr(txt, 1, 1) <- toupper(substr(txt, 1, 1))
   txt
 }
-#convert a number to text (2 -> "two")
+# convert a number to text (2 -> "two")
 num2text <- function(num, one = FALSE) {
   if (num == 1 && !one) {
     return("a") # says "a" instead of "one"
   }
   blurb_data$numbers[[num]]
 }
-#convert an amino acid's code to its full name
+# convert an amino acid's code to its full name
 aaname <- function(aa) {
   blurb_data$residues[[tolower(aa)]]
 }
 
-#helper function to extract data labels from template
+# helper function to extract data labels from template
 # parameters:
 # - text: the template text
 # - rx: the regular expression to match
@@ -126,7 +126,7 @@ extract <- function(text, rx, capture = TRUE) {
   matches <- gregexpr(rx, text, perl = TRUE)
   pos <- matches[[1]]
   if (length(pos) == 1 && pos[[1]] == -1) {
-    #no matches, return empty data frame
+    # no matches, return empty data frame
     return(data.frame(label = character(), start = integer(), end = integer()))
   }
   len <- attr(matches[[1]], "match.length")
@@ -143,11 +143,11 @@ extract <- function(text, rx, capture = TRUE) {
 
 # helper function to escape special characters for latex
 tex_escape <- function(str) {
-  #fixed substitution with pipe support
+  # fixed substitution with pipe support
   g <- function(x, s, r) gsub(s, r, x, fixed = TRUE)
-  #auto-prepend backslash
+  # auto-prepend backslash
   e <- function(x, s) g(x, s, paste0("\\", s))
-  #sequentially apply all rules
+  # sequentially apply all rules
   str |>
     g("\\", "\\textasciibackslash") |>
     g("~", "\\textasciitilde") |>
@@ -164,8 +164,8 @@ tex_escape <- function(str) {
 # helper function to generate a random PubMed ID
 # to be used by the plugin functions
 generate_pubmed <- function(amount = sample.int(10, 1)) {
-  #generate 1 to 10 random integers between 1e7 and 3e7
-  #this is a rough approximation of the PubMed ID range
+  # generate 1 to 10 random integers between 1e7 and 3e7
+  # this is a rough approximation of the PubMed ID range
   sample.int(30000000L, amount) + 10000000L
 }
 
@@ -181,7 +181,7 @@ parse_template <- function(template_file) {
   lines <- readLines(template_file)
   text <- paste(lines, collapse = "\n")
 
-  #derive plugin file from template name
+  # derive plugin file from template name
   plugin_file <- sub(".tex", "_plugin.R", template_file, fixed = TRUE)
   if (!file.exists(plugin_file)) {
     warning(
@@ -189,7 +189,7 @@ parse_template <- function(template_file) {
       plugin_file
     )
   } else {
-    #source the plugin file
+    # source the plugin file
     before <- ls()
     source(plugin_file)
     loaded_functions <- setdiff(ls(), c(before, "before"))
@@ -200,15 +200,15 @@ parse_template <- function(template_file) {
     )
   }
 
-  #extract iterator sections
+  # extract iterator sections
   rx_begin_iter <- "\\\\begin\\{dataiter\\}\\{([^}]+)\\}"
   rx_end_iter <- "\\\\end\\{dataiter\\}"
   iter_starts <- extract(text, rx_begin_iter)
   iter_ends <- extract(text, rx_end_iter, capture = FALSE)
-  #assert that each dataiter begin also has an end
+  # assert that each dataiter begin also has an end
   stopifnot(nrow(iter_starts) == nrow(iter_ends))
 
-  #split text into sections and iterators
+  # split text into sections and iterators
   text_sections <- list()
   last_end <- 0
   for (i in seq_len(nrow(iter_starts))) {
@@ -221,7 +221,7 @@ parse_template <- function(template_file) {
   text_sections[[paste0("text_", i + 1)]] <-
     substr(text, last_end + 1, nchar(text))
 
-  #extract field positions in each section
+  # extract field positions in each section
   rx_field <- "\\\\data\\{([^}]+)\\}"
   section_fields <- lapply(text_sections, \(txt) extract(txt, rx_field))
 
@@ -231,34 +231,34 @@ parse_template <- function(template_file) {
   ))
 }
 
-#load override template if one was provided
+# load override template if one was provided
 if (!is.na(args$template_file)) {
   tmpl_struc <- parse_template(args$template_file)
   text_sections <- tmpl_struc$text_sections
   section_fields <- tmpl_struc$section_fields
 }
 
-#iterate over datasets
+# iterate over datasets
 outputs <- lapply(names(mock_data), \(uuid) {
   cat("Processing dataset #", uuid, "\n")
   dataset <- mock_data[[uuid]]
-  #determine the correct template for this dataset
-  #unless override was provided
+  # determine the correct template for this dataset
+  # unless override was provided
   if (is.na(args$template_file)) {
     lab_name <- dataset$testing_laboratory
     tmpl_file <- match_template(lab_name)
     cat("Loading template: ", tmpl_file, "\n")
-    #parse the template
+    # parse the template
     tmpl_struc <- parse_template(tmpl_file)
     text_sections <- tmpl_struc$text_sections
     section_fields <- tmpl_struc$section_fields
   }
-  #perform interpolations
+  # perform interpolations
   inter_sections <- lapply(seq_along(text_sections), \(i) {
     section_name <- names(text_sections)[[i]]
     txt <- text_sections[[i]]
     fields <- section_fields[[i]]
-    #if this is a regular text section:
+    # if this is a regular text section:
     if (startsWith(section_name, "text_")) {
       for (j in seq_len(nrow(fields))) {
         label <- fields[j, "label"]
@@ -283,13 +283,15 @@ outputs <- lapply(names(mock_data), \(uuid) {
           #                  "This is a placeholder for the blurb.")
           # }
           txt <- sub(marker, blurb, txt, fixed = TRUE)
-        # } else if (label == "summary_blurb") {
-        #   blurb <- summary_blurb(dataset$variants)
-        #   txt <- sub(marker, blurb, txt, fixed = "TRUE")
+          # } else if (label == "summary_blurb") {
+          #   blurb <- summary_blurb(dataset$variants)
+          #   txt <- sub(marker, blurb, txt, fixed = "TRUE")
         } else if (!(label %in% names(dataset))) {
           cat("Skipping unsupported label: ", label, "\n")
           txt <- sub(marker, paste0("{\\it Missing data} ", label),
-                     txt, fixed = TRUE)
+            txt,
+            fixed = TRUE
+          )
         } else {
           value <- tex_escape(dataset[[label]])
           txt <- sub(marker, value, txt, fixed = "TRUE")
@@ -297,12 +299,14 @@ outputs <- lapply(names(mock_data), \(uuid) {
       }
       txt
     } else {
-      #otherwise, if this is an iterator section:
+      # otherwise, if this is an iterator section:
       iter_type <- sub("^[^:]+:", "", section_name)
       subdatasets <- dataset[[iter_type]]
       rows <- list()
       for (k in seq_along(subdatasets)) {
         sds <- subdatasets[[k]]
+        # add an "iter_counter" data field that counts along the subdataset
+        sds[["iter_counter"]] <- k
         row <- txt
         for (j in seq_len(nrow(fields))) {
           label <- fields[j, "label"]
@@ -323,7 +327,7 @@ outputs <- lapply(names(mock_data), \(uuid) {
   paste0(inter_sections, collapse = "")
 }) |> setNames(names(mock_data))
 
-#write outputs to file
+# write outputs to file
 for (uuid in names(outputs)) {
   outfile <- paste0(args$outprefix, "_", uuid, ".tex")
   cat(outputs[[uuid]], file = outfile)
