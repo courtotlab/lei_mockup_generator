@@ -2,17 +2,17 @@
 long_blurb <- function(dataset) {
   variants <- dataset$variants
 
-  #if there are no variants, we're done
+  # if there are no variants, we're done
   if (length(variants) == 0) {
     return("No variants were detected.")
   }
 
-  #parse HGVS strings
+  # parse HGVS strings
   hgvsps <- sapply(variants, `[[`, "hgvsp")
   hgvsp_data <- hgvsParseR::parseHGVS(hgvsps)
-  #fix missing stop codon type in var_data table
+  # fix missing stop codon type in var_data table
   if (any(grep("Ter$", hgvsps))) {
-    hgvsp_data$type[grep("Ter$",hgvsps)] <- "stop"
+    hgvsp_data$type[grep("Ter$", hgvsps)] <- "stop"
   }
   hgvscs <- sapply(variants, `[[`, "hgvsc")
   hgvsc_data <- hgvsParseR::parseHGVS(hgvscs)
@@ -23,7 +23,9 @@ long_blurb <- function(dataset) {
     c_detail <- hgvsc_data[i, ]
 
     paste(
-      "A heterozygous variant,",
+      "A",
+      variant$zygosity,
+      "variant,",
       paste0(
         tex_escape(variant$transcript_id), "(", variant$gene_symbol, "):",
         variant$hgvsc, ","
@@ -32,7 +34,7 @@ long_blurb <- function(dataset) {
       "was detected in exon", variant$exon, "of this gene.",
       "The allele frequency of this variant in the population databases is:",
       paste0(
-        "gnomAD: (", format(variant$mafaf * 100, digits=3), "\\% overall)."
+        "gnomAD: (", format(variant$mafaf * 100, digits = 3), "\\% overall)."
       ),
       "The classification of this variant in databases",
       "with clinically curated data is:",
@@ -47,7 +49,7 @@ long_blurb <- function(dataset) {
             "This variant has been reported in a patient with",
             "colon cancer (PMID:", generate_pubmed(1), ")."
           ),
-          "Pathogenic variants in the", variant$gene_symbol, 
+          "Pathogenic variants in the", variant$gene_symbol,
           "gene are associated with autosomal dominant",
           paste0(variant$gene_symbol, "-associated polyposis,"),
           "including familial adenomatous polyposis (FAP),",
@@ -63,8 +65,6 @@ long_blurb <- function(dataset) {
       },
       "Based on the current evidence, we interpret this variant as",
       tolower(variant$interpretation), "(ACMG category)."
-
     )
   }) |> paste(collapse = "\n\n")
-
 }

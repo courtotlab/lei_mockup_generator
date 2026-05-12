@@ -1,7 +1,5 @@
-#FIXME: need a reset function for the cached data
-#to be called by subsequent document interpolations!
-
-#storage for variant groups
+# storage for variant groups
+# template must re-set this storage at the beginning using the reset() function
 var_groups <- list()
 
 get_var_groups <- function(variants) {
@@ -9,7 +7,7 @@ get_var_groups <- function(variants) {
     return(var_groups)
   }
 
-  #randomly select variants as somatic and germline
+  # randomly select variants as somatic and germline
   is_somatic <- as.logical(sample.int(2, length(variants), replace = TRUE) - 1)
   interpretations <- sapply(variants, `[[`, "interpretation")
   is_plp <- grepl("pathogenic", interpretations, ignore.case = TRUE)
@@ -24,7 +22,7 @@ get_var_groups <- function(variants) {
   return(var_groups)
 }
 
-#tumor mutation burden storage
+# tumor mutation burden storage
 tmb <- NULL
 
 get_tmb <- function(...) {
@@ -45,7 +43,7 @@ get_vafs <- function(vars) {
   return(vafs)
 }
 
-#store modes of inheritance
+# store modes of inheritance
 inhs <- NULL
 get_inhs <- function(vars) {
   if (!is.null(inhs)) {
@@ -55,7 +53,10 @@ get_inhs <- function(vars) {
   inhs <<- sapply(vars, `[[`, "chromosome") |>
     sapply(\(chrom) {
       paste0(
-        switch(chrom, chrX = "X", "A"),
+        switch(chrom,
+          chrX = "X",
+          "A"
+        ),
         sample(c("D", "R"), 1)
       )
     }) |>
@@ -63,7 +64,7 @@ get_inhs <- function(vars) {
   return(inhs)
 }
 
-#reset function to delete data from previous documents
+# reset function to delete data from previous documents
 reset <- function(...) {
   inhs <<- NULL
   vafs <<- NULL
@@ -148,7 +149,7 @@ findings_tables <- function(dataset) {
     paste(sapply(var_groups$somatic_actionable, \(v) {
       paste(
         "A clinically actionable variant in the",
-        v$gene_symbol, 
+        v$gene_symbol,
         "gene was identified, which is associated",
         "with poor prognosis in angiosarcomas."
       )
@@ -156,7 +157,7 @@ findings_tables <- function(dataset) {
     paste(sapply(var_groups$somatic_vus, \(v) {
       paste(
         "An oncogenic variant with uncertain clinical actionability in the",
-        v$gene_symbol, 
+        v$gene_symbol,
         "gene was identified."
       )
     }), collapse = ""),
@@ -166,35 +167,33 @@ findings_tables <- function(dataset) {
     paste(sapply(var_groups$germline_plp, \(v) {
       paste(
         "A", v$interpretation, "variant in the",
-        v$gene_symbol, 
+        v$gene_symbol,
         "gene was found in the germline of this patient."
       )
     }), collapse = ""),
     paste(sapply(var_groups$germline_vus, \(v) {
       paste(
         "A", v$interpretation, "in the",
-        v$gene_symbol, 
+        v$gene_symbol,
         "gene was found in the germline of this patient."
       )
     }), collapse = ""),
     "The results suggest that these variants are mosaic ",
     "(\\textasciitilde 39\\%) in the peripheral blood of this patient."
   )
-
 }
 
 somatic_table <- function(dataset) {
-
   variants <- dataset$variants
   var_groups <- get_var_groups(variants)
   soma_vars <- c(var_groups$somatic_plp, var_groups$somatic_vus)
-  
+
   if (length(soma_vars) == 0) {
     return("No variants to report.")
   }
 
 
-  #variant allele frequencies are indexed using mega_hgvs as IDs
+  # variant allele frequencies are indexed using mega_hgvs as IDs
   vafs <- get_vafs(soma_vars)
 
   sapply(soma_vars, \(v) {
@@ -209,11 +208,10 @@ somatic_table <- function(dataset) {
 
 
 somatic_blurb <- function(dataset) {
-
   variants <- dataset$variants
   var_groups <- get_var_groups(variants)
   soma_vars <- c(var_groups$somatic_plp, var_groups$somatic_vus)
-  #variant allele frequencies are indexed using mega_hgvs as IDs
+  # variant allele frequencies are indexed using mega_hgvs as IDs
   vafs <- get_vafs(soma_vars)
 
   paste(
@@ -227,28 +225,26 @@ somatic_blurb <- function(dataset) {
     "or diagnostic actionability.\n\n",
     somatic_sub_blurb(var_groups$somatic_vus, vafs)
   )
-
 }
 
 somatic_sub_blurb <- function(vars, vafs) {
-
   if (length(vars) == 0) {
     return("No variants found.")
   }
 
-  #parse HGVS strings
+  # parse HGVS strings
   hgvsps <- sapply(vars, `[[`, "hgvsp")
   hgvsp_data <- hgvsParseR::parseHGVS(hgvsps)
-  #fix missing stop codon type in var_data table
+  # fix missing stop codon type in var_data table
   if (any(grep("Ter$", hgvsps))) {
-    hgvsp_data$type[grep("Ter$",hgvsps)] <- "stop"
+    hgvsp_data$type[grep("Ter$", hgvsps)] <- "stop"
   }
   # hgvscs <- sapply(vars, `[[`, "hgvsc")
   # hgvsc_data <- hgvsParseR::parseHGVS(hgvscs)
 
   sapply(seq_along(vars), \(i) {
     v <- vars[[i]]
-    h <- hgvsp_data[i,]
+    h <- hgvsp_data[i, ]
     vaf <- vafs[[i]]
     paste0(
       "Variant: ", v$hgvsc, " (", v$hgvsp, ") in the ",
@@ -327,22 +323,21 @@ germline_blurb <- function(dataset) {
 }
 
 germline_sub_blurb <- function(vars, inhs) {
-
   if (length(vars) == 0) {
     return("No variants found.")
   }
 
-  #parse HGVS strings
+  # parse HGVS strings
   hgvsps <- sapply(vars, `[[`, "hgvsp")
   hgvsp_data <- hgvsParseR::parseHGVS(hgvsps)
-  #fix missing stop codon type in var_data table
+  # fix missing stop codon type in var_data table
   if (any(grep("Ter$", hgvsps))) {
-    hgvsp_data$type[grep("Ter$",hgvsps)] <- "stop"
+    hgvsp_data$type[grep("Ter$", hgvsps)] <- "stop"
   }
 
   sapply(seq_along(vars), \(i) {
     v <- vars[[i]]
-    h <- hgvsp_data[i,]
+    h <- hgvsp_data[i, ]
     paste0(
       "Variant: ", v$hgvsc, " (", v$hgvsp, ") in the ",
       v$gene_symbol, "gene\\\\\n",
@@ -352,8 +347,7 @@ germline_sub_blurb <- function(vars, inhs) {
       "Not assessed\n\n",
       "Comment: The ", v$interpretation, ", ",
       v$hgvsc, " ", v$hgvsp, " variant ",
-      switch(
-        h$type,
+      switch(h$type,
         substitution = paste(
           "replaces a", h$ancestral, "amino acid at position",
           h$start, "with a", h$variant, ". "
