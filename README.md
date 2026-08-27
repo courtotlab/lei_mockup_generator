@@ -19,7 +19,7 @@ Here we generate mockup clinical report PDFs to be used for evaluating clinical 
   * R>=4.5, with the following packages installed: `argparser`, `biomaRt`, `hgvsParseR`, `httr`, `RJSONIO`, `yaml`, `hash`
     * To install hgvsParseR, use `remotes::install_github("VariantEffect/hgvsParseR")`
   * LaTeX / TeXLive / TinyTeX
-    * If you use TinyTeX, you need to install `tex-gyre` and `draftwatermark` explicitly via: `tlmgr install tex-gyre draftwatermark`
+    * If you use TinyTeX, you need to install the following TeX packages explicitly via: `tlmgr install tex-gyre draftwatermark extsizes courierten domitian fancyhdr lastpage microtype`
   * ImageMagick >= v7.1
 
 ## Usage:

@@ -112,21 +112,4 @@ long_blurb <- function(dataset) {
     )
   }) |> paste(collapse = "\n\n")
 }
-# This frameshift variant in the BRCA1 gene results in a 
-# deletion of four nucleotides (TCAA), which modifies the 
-# reading frame to produce an alternate stop codon, resulting 
-# in a prematurely truncated protein. This truncated protein, 
-# with legacy nomenclature BRCA1 4181del4, is presumed to be 
-# non-functional. The variant has been reported multiple times 
-# in ClinVar, with consensus for a pathogenic classification. 
-# Loss of one BRCA1 allele is consistent with an increased 
-# risk of developing breast/ovarian cancer (PMID: 31897316). 
-# This variant has also been identified in multiple independent 
-# families with hereditary breast and ovarian cancer 
-# (PMID: 23683081; 20104584; 21559243; 11802209). This is 
-# classified as a pathogenic variant.
-#
-# Interpretation of these findings must be made in light of 
-# the clinical history and evaluation of this individual. 
-# Genetic counselling and appropriate clinical follow up are 
-# recommended for this individual.
+

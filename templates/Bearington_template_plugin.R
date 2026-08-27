@@ -117,13 +117,3 @@ long_blurb <- function(dataset) {
   }) |> paste(collapse = "\n\n")
 
 }
-
-# This individual is heterozygous for a rare sequence variant 
-# in the BRCA2 gene. This variant is a deletion of two nucleotides 
-# c.5722\_5723delCT and is predicted to result in the frameshift 
-# of the open reading frame creating a premature stop codon 
-# p.(Leu1908ArgfsTer2) This variant is predicted to cause loss 
-# or disruption of the normal protein function through 
-# nonsense-mediated RNA decay or protein truncation. Based on 
-# the currently available evidence this variant is classified 
-# as pathogenic mutation (ACMG category 1)

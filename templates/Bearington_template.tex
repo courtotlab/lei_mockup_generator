@@ -24,8 +24,8 @@
 \fancyhfoffset[L]{0cm} % left extra length
 \fancyhfoffset[R]{0cm} % right extra length
 \lhead{\parbox{\textwidth}{
-\begin{center}{\LARGE \bf REDACTED Regional Laboratory Medicine Program}\end{center}
-\vspace{-2.2em}\begin{center}{\Large Regional Genetics Services of REDACTED}\end{center}
+\begin{center}{\LARGE \bf Bearington Health Centre}\end{center}
+\vspace{-2.2em}\begin{center}{\Large Bearington Health Genetics Services}\end{center}
 
 \begin{tabular}{p{12cm} p{7.5cm}}
 Department of Laboratory Medicine & Tel: REDACTED\\
@@ -50,14 +50,14 @@ ADDRESS REDACTED & Fax No.: REDACTED
 \vspace{-1.2em}
 \fbox{\parbox{\textwidth}{
 \begin{tabular}{p{10cm} p{9.5cm}}
-{\bf Name}: {\Large JONASSON, ANDERS} & {\bf Hospital ID No.}: M002174677 \\
+{\bf Name}: {\Large REDACTED} & {\bf Hospital ID No.}: Redacted \\
  & {\bf Health Care No.}: - \\
- {\bf Sex}: M \hspace{2ex} {\bf Age}: 51 \hspace{2ex} {\bf D.O.B}: 28/12/69 & {\bf Account No}.: MF017396/21 \\
- & {\bf Location}: MR-GEN \\
- {\bf Specimen No.}: {\Large 21:M09519} & {\bf Specimen Date}: 20/09/21 \hspace{2ex} {\bf Status}: SOUT\\
- {\bf Requesting Physician}: REDACTED & {\bf Received Date}: 24/09/21 1425  \\
+ {\bf Sex}: M \hspace{2ex} {\bf Age}: Red. \hspace{2ex} {\bf D.O.B}: Redacted & {\bf Account No}.: Redacted \\
+ & {\bf Location}: Redacted \\
+ {\bf Specimen No.}: {\Large 21:M09519} & {\bf Specimen Date}: \data{date_collected} \hspace{2ex} {\bf Status}: SOUT\\
+ {\bf Requesting Physician}: Redacted & {\bf Received Date}: \data{date_received}  \\
  {\bf Location}: & \\
- {\bf Specimen}: Extracted Nucleic Acid (DNA) & {\bf Printed On}: 12/11/21 1439\\
+ {\bf Specimen}: Extracted Nucleic Acid (DNA) & {\bf Printed On}: \data{date_verified}\\
 \end{tabular}
 }}
 
@@ -79,49 +79,54 @@ ADDRESS REDACTED & Fax No.: REDACTED
 
 \vspace{-1em}
 \hfill \parbox{19cm}{
-{\bf These findings should be discussed in the context of this individual's family and clinical history in the setting of genetic counselling.}
+  {\bf These findings should be discussed in the context of this individual's family and clinical history in the setting of genetic counselling.}
 
-\vspace{1em}
-{\bf Summary}: This is an abnormal result A pathogenic variant was detected in the
-gene.
+  \vspace{1em}
+  {\bf Summary}: This is an abnormal result. A pathogenic variant was detected in the gene.
 
-\vspace{1em}
-Sequence variant(s) identified:\\
-Gene (Transcript): BRCA2 (NM\_000059.3) \\
-\vspace{1em}
-HGVS: c.5722\_5723delCT, p.(Leu1908ArgfsTer2) \\
-Location: exon 11 \\
-Zygosity: heterozygous \\
-Variant type: frameshift \\
-ACMG classification: pathogenic (category \#1)
+  \vspace{1em}
+  Sequence variant(s) identified:\\
 }
+\begin{dataiter}{variants}
+\vspace{-1em}
+\hfill \parbox{19cm}{
+  Gene (Transcript): \data{gene_symbol} (\data{transcript_id}) \\
+  \vspace{1em}
+  HGVS: \data{hgvsc}, \data{hgvsp} \\
+  Location: exon \data{exon} \\
+  Zygosity: \data{zygosity} \\
+  Variant type: \data{type} \\
+  ACMG classification: \data{interpretation} (category \#1)
+}
+\end{dataiter}
 
 
 \fcolorbox{black}{lightgray}{{\bf \large INTERPRETATION }}\\
 
 \vspace{-1em}
 \hfill \parbox{19cm}{
-Pathogenic variants in the BRCA2 gene are associated with increased risk of breast, ovarian and several other cancers [1].
+  Pathogenic variants in the BRCA2 gene are associated with increased risk of breast, ovarian and several other cancers [1].
 
-\vspace{1em}
-Genetic counselling and clinical follow up are recommended.
+  \vspace{1em}
+  Genetic counselling and clinical follow up are recommended.
 
-\vspace{1em}
-Variant(s) summary:
-
-\vspace{1em}
-This individual is heterozygous for a rare sequence variant in the BRCA2 gene. This variant is a deletion of two nucleotides c.5722\_5723delCT and is predicted to result in the frameshift of the open reading frame creating a premature stop codon p.(Leu1908ArgfsTer2) This variant is predicted to cause loss or disruption of the normal protein function through nonsense-mediated RNA decay or protein truncation. Based on the currently available evidence this variant is classified as pathogenic mutation (ACMG category 1)
+  \vspace{1em}
+  Variant(s) summary:
+  \vspace{1em}
+  
+  \data{plugin:long_blurb}
+  % This individual is heterozygous for a rare sequence variant in the BRCA2 gene. This variant is a deletion of two nucleotides c.5722\_5723delCT and is predicted to result in the frameshift of the open reading frame creating a premature stop codon p.(Leu1908ArgfsTer2) This variant is predicted to cause loss or disruption of the normal protein function through nonsense-mediated RNA decay or protein truncation. Based on the currently available evidence this variant is classified as pathogenic mutation (ACMG category 1)
 }
 
 {\bf TEST SUMMARY AND REFERENCES}
 
 % \vspace{-1em}
 \hfill \parbox{19cm}{
-\underline{Background}: Hereditary Breast and Ovarian Cancer (HBOC) is an autosomal dominant cancer predisposition syndrome most commonly associated with loss-of-function mutations involving the BRCA1 and BRCA2 genes (OMIM 612535, 604370) [1]. In addition to BRCA1 and BRCA2, there are several other genes associated with increased risks for breast and/or ovarian cancer [1,2] The current test panel allows simultaneous analysis of BRCA1 and BRCA2 genes, 16 genes implicated in HBOC and HOXB13 gene implicated in prostate cancer [3].
+\underline{Background}: Hereditary Breast and Ovarian Cancer (HBOC) is an autosomal dominant cancer predisposition syndrome most commonly associated with loss-of-function mutations involving the BRCA1 and BRCA2 genes (OMIM 612535, 604370) [1]. In addition to BRCA1 and BRCA2, there are several other genes associated with increased risks for breast and/or ovarian cancer [1,2] The current test panel allows simultaneous analysis of \data{num_tested_genes} genes.
 
 \vspace{1em}
-\underline{Testing Methods}: A 19-gene panel is analyzed using a custom designed next-generation sequencing (NGS) protocol based on target enrichment of selected gene regions using KAPA HyperChoice chemistry (Roche Sequencing solutions). Next Generation Sequencing (NGS) is performed using MiSeq v2 Reagent Kit on MiSeq instrument (Illumina). Sequence variants and copy number changes are assessed using clinically validated algorithms and commercial software [4]. Sequence alignment and variant calling are performed using NextGENe software (Softgenetics). Sequence variants are annotated using the Geneticist Assistant software, (Softgenetics) Exon level copy number variants (CNVs) are analyzed using the batch CNV tool, NextGENe software (Softgenetics).
-Genes analyzed: ATM (NM\_000051.3), BARD1 (NM\_000465.3), BRCA1 (NM\_007294.3), BRCA2 (NM\_000059.3), BRIP1 (NM\_032043.2), CDH1 (NM\_004360.3), CHEK2 (NM\_007194.3), EPCAM (NM\_002354.2), HOXB13 (NM\_006361.5), MLH1 (NM\_000249.3) MSH2 (NM\_000251.2), MSH6 (NM\_000179.2) PALB2 (NM\_024675.3), PMS2 (NM\_000535.6), PTEN (NM\_000314.6), RAD51C (NM\_058216.2), RAD51D (NM\_002878.3), STK11 (NM\_000455.4), TP53 (NM\_000546.5)
+\underline{Testing Methods}: A \data{num_tested_genes}-gene panel is analyzed using a custom designed next-generation sequencing (NGS) protocol based on target enrichment of selected gene regions using KAPA HyperChoice chemistry (Roche Sequencing solutions). Next Generation Sequencing (NGS) is performed using MiSeq v2 Reagent Kit on MiSeq instrument (Illumina). Sequence variants and copy number changes are assessed using clinically validated algorithms and commercial software [4]. Sequence alignment and variant calling are performed using NextGENe software (Softgenetics). Sequence variants are annotated using the Geneticist Assistant software, (Softgenetics) Exon level copy number variants (CNVs) are analyzed using the batch CNV tool, NextGENe software (Softgenetics).
+Genes analyzed: \begin{dataiter}{tested_genes}\data{gene_symbol}(\data{refseq_mrna}), \end{dataiter}
 }
 
 \hfill \parbox{19cm}{

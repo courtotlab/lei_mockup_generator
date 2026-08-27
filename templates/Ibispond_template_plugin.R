@@ -154,14 +154,3 @@ long_blurb <- function(dataset) {
   }) |> paste(collapse = "\n\n")
 }
 
-
-# Based on the following evidence, the CHEK2 c. 1100de|C (p. Thr367Metfs*15) variant is classified as pathogenic: 1) this
-# frameshift variant leads to a premature termination codon, which is predicted to result in a truncated or absent protein; 2)
-# this variant is reported in association with an increased risk of developing breast cancer (PMID: 18172190, 24918820,
-# 17428320; 3) this variant has been reported in families affected with Li-Fraumeni syndrome (PMID: 10617473,
-# 11479205); 4) this variant is present in gnomAD (MAF = 0.21%, 591/280390 alleles, 1 homozogyote) with a higher
-# frequency reported in the European (Finnish) subpopulation (MAF = 0.87%, 219/25124 alleles); 5) this variant has been
-# reported in Clin Var by 22 clinical laboratories, with conflicting classifications (20 pathogenic, 2 uncertain). Based on
-# currently available information, this variant is classified as pathogenic according to the ACMG 2015 variant classification
-# guidelines (PMID: 25741868). Although this variant is not expected to cause highly penetrant Mendelian disease, it is an
-# established cancer risk factor.
